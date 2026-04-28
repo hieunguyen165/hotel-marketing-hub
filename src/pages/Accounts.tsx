@@ -12,9 +12,9 @@ import { accounts, AccountCategory, Importance } from "@/data/mockData";
 import { Search, Shield, ShieldAlert, ShieldCheck, User2, ClipboardList, Calendar } from "lucide-react";
 
 const importanceStyles: Record<Importance, { className: string; icon: any }> = {
-  "Nguy hiểm": { className: "bg-destructive/10 text-destructive border-destructive/20", icon: ShieldAlert },
-  "Quan trọng": { className: "bg-warning/10 text-warning border-warning/20", icon: Shield },
-  "Thường": { className: "bg-success/10 text-success border-success/20", icon: ShieldCheck },
+  "Nguy hiểm": { className: "bg-destructive/15 text-destructive border-destructive/30", icon: ShieldAlert },
+  "Quan trọng": { className: "bg-warning/15 text-warning border-warning/30", icon: Shield },
+  "Thường": { className: "bg-success/15 text-success border-success/30", icon: ShieldCheck },
 };
 
 const categories: ("Tất cả" | AccountCategory)[] = ["Tất cả", "Website", "Fanpage", "Quảng cáo", "OTA", "Email", "Thiết kế"];
@@ -68,29 +68,30 @@ const Accounts = () => {
           const Style = importanceStyles[a.importance];
           const Icon = Style.icon;
           return (
-            <Card key={a.id} className="group flex flex-col border-border bg-card p-5 shadow-card-soft transition-smooth hover:shadow-elegant">
+            <Card key={a.id} className="group relative flex flex-col overflow-hidden border border-border/60 glass p-5 transition-smooth hover:border-primary/40 hover:shadow-glow">
+              <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/0 blur-2xl transition-smooth group-hover:bg-primary/10" />
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <Badge variant="outline" className="mb-2 text-[10px] uppercase tracking-wider">
+                  <Badge variant="outline" className="mb-2 border-border/60 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
                     {a.category}
                   </Badge>
-                  <h3 className="font-display text-lg font-semibold leading-snug text-foreground">{a.name}</h3>
+                  <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-foreground">{a.name}</h3>
                 </div>
-                <Badge className={`shrink-0 border ${Style.className}`}>
+                <Badge className={`shrink-0 border font-mono text-[10px] uppercase ${Style.className}`}>
                   <Icon className="mr-1 h-3 w-3" /> {a.importance}
                 </Badge>
               </div>
 
               <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{a.description}</p>
 
-              <div className="mt-auto space-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-2"><User2 className="h-3.5 w-3.5" /> Phụ trách: <span className="font-medium text-foreground">{a.owner}</span></div>
-                <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5" /> Cập nhật: {a.lastUpdated}</div>
+              <div className="mt-auto space-y-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2"><User2 className="h-3.5 w-3.5 text-primary" /> Phụ trách: <span className="font-medium text-foreground">{a.owner}</span></div>
+                <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-primary" /> Cập nhật: <span className="font-mono text-foreground/80">{a.lastUpdated}</span></div>
               </div>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="mt-4 w-full border-primary/20 text-primary hover:bg-primary hover:text-primary-foreground">
+                  <Button variant="outline" className="mt-4 w-full border-primary/30 bg-primary/5 text-primary transition-smooth hover:bg-primary hover:text-primary-foreground hover:shadow-gold">
                     <ClipboardList className="mr-2 h-4 w-4" /> Quy trình bàn giao
                   </Button>
                 </DialogTrigger>
@@ -124,15 +125,18 @@ const Accounts = () => {
 
 function SummaryStat({ label, value, tone, hint }: { label: string; value: number; tone: "danger" | "warning" | "success"; hint: string }) {
   const toneClass = {
-    danger: "border-l-destructive bg-destructive/5",
-    warning: "border-l-warning bg-warning/5",
-    success: "border-l-success bg-success/5",
+    danger: { bar: "bg-destructive", glow: "shadow-[0_0_20px_hsl(var(--destructive)/0.3)]", text: "text-destructive" },
+    warning: { bar: "bg-warning", glow: "shadow-[0_0_20px_hsl(var(--warning)/0.3)]", text: "text-warning" },
+    success: { bar: "bg-success", glow: "shadow-[0_0_20px_hsl(var(--success)/0.3)]", text: "text-success" },
   }[tone];
   return (
-    <Card className={`border-l-4 p-4 ${toneClass}`}>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-2xl font-semibold text-foreground">{value} <span className="text-sm font-normal text-muted-foreground">tài khoản</span></p>
-      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
+    <Card className="relative overflow-hidden border border-border/60 glass p-4">
+      <div className={`absolute left-0 top-0 h-full w-0.5 ${toneClass.bar} ${toneClass.glow}`} />
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-3xl font-semibold tracking-tight text-foreground">
+        {value} <span className="text-sm font-normal text-muted-foreground">tài khoản</span>
+      </p>
+      <p className={`mt-1 text-xs ${toneClass.text}`}>{hint}</p>
     </Card>
   );
 }
