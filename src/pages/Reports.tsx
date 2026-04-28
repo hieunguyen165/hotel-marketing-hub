@@ -968,6 +968,13 @@ function FanpageView({
   const meta = channelMeta.fanpage;
   const Icon = meta.icon;
 
+  // Bộ lọc Tuần / Tháng / Năm
+  const [period, setPeriod] = useState<"week" | "month" | "year">("week");
+  const periodLabel = period === "week" ? "tuần" : period === "month" ? "tháng" : "năm";
+  const aggregated = useMemo(() => aggregateFanpage(data, period), [data, period]);
+  const lastAgg = aggregated[aggregated.length - 1];
+  const prevAgg = aggregated[aggregated.length - 2];
+
   const allFields = fanpageGroups.flatMap((g) => g.fields);
   const [week, setWeek] = useState(`T${parseInt(last.week.replace("T", "")) + 1}`);
   const [values, setValues] = useState<Record<string, string>>(
@@ -987,19 +994,39 @@ function FanpageView({
     <div className="space-y-6">
       {/* Hero */}
       <Card className={`border-0 p-6 text-white shadow-elegant md:p-7 bg-gradient-to-br ${meta.color}`}>
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
-            <Icon className="h-6 w-6" />
-          </span>
-          <div>
-            <Badge className="mb-1 bg-white/20 text-white hover:bg-white/20">Kênh Fanpage</Badge>
-            <h2 className="font-display text-2xl font-bold">Báo cáo Fanpage — Tuần {last.week}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
+              <Icon className="h-6 w-6" />
+            </span>
+            <div>
+              <Badge className="mb-1 bg-white/20 text-white hover:bg-white/20">Kênh Fanpage</Badge>
+              <h2 className="font-display text-2xl font-bold">Báo cáo Fanpage — {lastAgg.label}</h2>
+            </div>
+          </div>
+          <div className="rounded-xl bg-white/15 p-1 backdrop-blur">
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as "week" | "month" | "year")}>
+              <TabsList className="bg-transparent">
+                <TabsTrigger value="week" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Tuần</TabsTrigger>
+                <TabsTrigger value="month" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Tháng</TabsTrigger>
+                <TabsTrigger value="year" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Năm</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
       </Card>
 
+      {/* Filter info bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Filter className="h-4 w-4 text-primary" />
+          Đang xem theo <strong className="text-foreground">{periodLabel}</strong> · {aggregated.length} kỳ · so sánh với {periodLabel} liền trước
+        </div>
+        <Badge variant="secondary" className="text-xs">{lastAgg.label}</Badge>
+      </div>
+
       {/* === BIỂU ĐỒ PHÂN TÍCH CHUYÊN SÂU (lên đầu, 3 cột) === */}
-      <FanpageAnalytics data={data} last={last} prev={prev} />
+      <FanpageAnalytics aggregated={aggregated} periodLabel={periodLabel} />
 
       {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
       <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
