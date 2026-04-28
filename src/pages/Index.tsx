@@ -38,7 +38,7 @@ const Index = () => {
       title="Marketing Command Center"
       subtitle={today}
       actions={
-        <Button asChild className="bg-gradient-gold text-primary-foreground shadow-gold hover:opacity-95">
+        <Button asChild className="rounded-full bg-gradient-brand text-primary-foreground shadow-gold hover:opacity-95">
           <Link to="/reports">
             Xem báo cáo tuần <ArrowUpRight className="ml-1 h-4 w-4" />
           </Link>
@@ -46,28 +46,26 @@ const Index = () => {
       }
     >
       {/* Hero */}
-      <Card className="relative mb-8 overflow-hidden border border-border/60 glass-strong p-8 md:p-10">
-        <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-primary/20 blur-[100px]" />
+      <Card className="relative mb-8 overflow-hidden border border-border bg-card p-8 shadow-card-soft md:p-10">
+        <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-primary/15 blur-[100px]" />
         <div className="pointer-events-none absolute -bottom-24 left-1/4 h-72 w-72 rounded-full bg-accent/15 blur-[100px]" />
-        <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
         <div className="relative max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 font-mono text-[11px] uppercase tracking-wider text-primary">
-            <Sparkles className="h-3 w-3" /> Week {last.week} · 2026 · Auto-sync
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-accent-soft px-3 py-1 text-xs font-medium text-primary">
+            <Sparkles className="h-3.5 w-3.5" /> Tuần {last.week} · 2026
           </div>
-          <h2 className="font-display text-3xl font-semibold leading-[1.15] tracking-tight text-foreground md:text-5xl">
-            Marketing tuần này:<br />
-            <span className="text-gradient-gold">tăng trưởng ổn định.</span>
+          <h2 className="font-display text-3xl font-bold leading-[1.1] tracking-tight text-foreground md:text-5xl">
+            Marketing tuần này <span className="text-gradient-brand">tăng trưởng ổn định</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
-            Đặt phòng website <span className="font-mono font-semibold text-primary">+{bookingDelta}</span> so với tuần trước.
-            Meta Ads tối ưu, CPA giảm <span className="font-mono font-semibold text-success">{Math.abs(cpaDelta)}%</span>.
-            Reach Fanpage <span className="font-mono font-semibold text-accent">+{reachDelta}%</span>.
+            Đặt phòng từ website tăng <strong className="text-primary">+{bookingDelta}</strong> so với tuần trước.
+            Quảng cáo Meta tối ưu hơn, CPA giảm <strong className="text-success">{Math.abs(cpaDelta)}%</strong>.
+            Reach Fanpage tiếp tục đi lên <strong className="text-accent">+{reachDelta}%</strong>.
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button asChild size="sm" className="bg-gradient-gold text-primary-foreground shadow-gold">
+            <Button asChild size="sm" className="rounded-full bg-gradient-brand text-primary-foreground shadow-gold">
               <Link to="/reports"><Activity className="mr-1.5 h-3.5 w-3.5" /> Báo cáo chi tiết</Link>
             </Button>
-            <Button asChild size="sm" variant="outline" className="border-border/60 bg-card/40 backdrop-blur">
+            <Button asChild size="sm" variant="outline" className="rounded-full border-border bg-card">
               <Link to="/checklist">Checklist tuần →</Link>
             </Button>
           </div>
@@ -115,16 +113,15 @@ function KpiCard({
   label, value, delta, positive, icon: Icon,
 }: { label: string; value: string | number; delta: string; positive?: boolean; icon: any }) {
   return (
-    <Card className="group relative overflow-hidden border border-border/60 glass p-5 transition-smooth hover:border-primary/40 hover:shadow-glow">
-      <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/0 blur-2xl transition-smooth group-hover:bg-primary/15" />
-      <div className="relative flex items-start justify-between">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
-        <div className="rounded-md border border-primary/20 bg-primary/10 p-1.5 text-primary">
-          <Icon className="h-3.5 w-3.5" />
+    <Card className="group relative overflow-hidden border border-border bg-card p-5 shadow-card-soft transition-smooth hover:-translate-y-0.5 hover:shadow-elegant">
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-medium text-muted-foreground">{label}</p>
+        <div className="rounded-xl bg-accent-soft p-2 text-primary">
+          <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="relative mt-3 font-display text-3xl font-semibold tracking-tight text-foreground">{value}</p>
-      <p className={`relative mt-1 font-mono text-[11px] ${positive ? "text-success" : "text-muted-foreground"}`}>{delta}</p>
+      <p className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">{value}</p>
+      <p className={`mt-1 text-xs ${positive ? "text-success" : "text-muted-foreground"}`}>{delta}</p>
     </Card>
   );
 }
@@ -132,11 +129,11 @@ function KpiCard({
 function NavCard({ to, icon: Icon, title, desc }: { to: string; icon: any; title: string; desc: string }) {
   return (
     <Link to={to}>
-      <Card className="group h-full cursor-pointer border border-border/60 glass p-5 transition-smooth hover:-translate-y-1 hover:border-primary/40 hover:shadow-glow">
-        <div className="mb-3 inline-flex rounded-lg border border-primary/20 bg-gradient-gold p-2.5 text-primary-foreground shadow-gold">
+      <Card className="group h-full cursor-pointer border border-border bg-card p-5 shadow-card-soft transition-smooth hover:-translate-y-1 hover:border-primary/30 hover:shadow-elegant">
+        <div className="mb-3 inline-flex rounded-2xl bg-gradient-brand p-3 text-primary-foreground shadow-gold">
           <Icon className="h-5 w-5" />
         </div>
-        <h3 className="font-display text-base font-semibold tracking-tight text-foreground">{title}</h3>
+        <h3 className="font-display text-base font-bold tracking-tight text-foreground">{title}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{desc}</p>
         <ArrowUpRight className="mt-3 h-4 w-4 text-muted-foreground transition-smooth group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-primary" />
       </Card>
