@@ -816,6 +816,59 @@ function fmt(n: number) {
   const sign = n > 0 ? "+" : "";
   return `${sign}${n}%`;
 }
+
+/**
+ * Gộp dữ liệu theo Tuần / Tháng / Năm.
+ * Giả định nhãn tuần có dạng "T13"..."T52" trong năm hiện tại (2026).
+ * - Tuần: giữ nguyên từng tuần.
+ * - Tháng: gộp 4 tuần liên tiếp (T1-T4 = Tháng 1, T5-T8 = Tháng 2, ...).
+ * - Năm: cộng dồn toàn bộ tuần.
+ * Các chỉ số tỷ lệ (conversion, cpa) được tính lại bằng trung bình có trọng số.
+ */
+function aggregateByPeriod(
+  data: WeeklyReport[],
+  channel: "website" | "ads",
+  fields: { key: string; label: string }[],
+  period: "week" | "month" | "year",
+) {
+  const year = 2026;
+  const rows = data.map((d) => {
+    const wk = parseInt(d.week.replace(/\D/g, "")) || 1;
+    const month = Math.min(12, Math.ceil(wk / 4));
+    return { wk, month, year, raw: (d as any)[channel] as Record<string, number>, week: d.week };
+  });
+
+  if (period === "week") {
+    return rows.map((r) => ({ label: r.week, ...r.raw }));
+  }
+
+  // Group by month or year
+  const groups = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const key = period === "month" ? `T${r.month}/${r.year}` : `${r.year}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(r);
+  }
+
+  return Array.from(groups.entries()).map(([label, items]) => {
+    const agg: Record<string, number> = { };
+    for (const f of fields) {
+      const isRate = f.key === "conversion" || f.key === "cpa";
+      if (isRate) {
+        // Trung bình có trọng số: cpa theo bookings; conversion theo sessions
+        const weightKey = f.key === "cpa" ? "bookings" : "sessions";
+        const totalWeight = items.reduce((s, it) => s + (it.raw[weightKey] ?? 0), 0);
+        agg[f.key] = totalWeight
+          ? Math.round(items.reduce((s, it) => s + (it.raw[f.key] ?? 0) * (it.raw[weightKey] ?? 0), 0) / totalWeight)
+          : 0;
+        if (f.key === "conversion") agg[f.key] = Math.round(agg[f.key] * 100) / 100;
+      } else {
+        agg[f.key] = items.reduce((s, it) => s + (it.raw[f.key] ?? 0), 0);
+      }
+    }
+    return { label, ...agg };
+  });
+}
 function ChannelCard({ title, data }: { title: string; data: { label: string; value: any; delta: number; invert?: boolean }[] }) {
   return (
     <Card className="p-5 shadow-card-soft">
