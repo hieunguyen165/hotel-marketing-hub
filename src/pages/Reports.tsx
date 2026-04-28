@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Filter } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FanpageDecisionDashboard, FanpageRecommendations } from "@/components/reports/FanpageDecisionDashboard";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
 
@@ -1032,7 +1033,14 @@ function FanpageView({
       </div>
 
       {/* === BIỂU ĐỒ PHÂN TÍCH CHUYÊN SÂU === */}
+      {/* === DECISION SUPPORT: KPI → Insight + Warning → Funnel tổng hợp === */}
+      <FanpageDecisionDashboard aggregated={aggregated} period={period} periodLabel={periodLabel} />
+
+      {/* === BIỂU ĐỒ CHI TIẾT === */}
       <FanpageAnalytics aggregated={aggregated} periodLabel={periodLabel} />
+
+      {/* === KHUYẾN NGHỊ HÀNH ĐỘNG === */}
+      <FanpageRecommendations aggregated={aggregated} period={period} periodLabel={periodLabel} />
 
       {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
       <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
