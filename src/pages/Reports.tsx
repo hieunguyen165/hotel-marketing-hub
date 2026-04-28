@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
-  Globe, Megaphone, MessageCircle, LayoutGrid,
+  Globe, Megaphone, MessageCircle, LayoutGrid, Eye, Heart, Users, Mail,
 } from "lucide-react";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
@@ -90,11 +90,23 @@ const Reports = () => {
         />
       )}
       {current === "fanpage" && (
-        <ChannelView
-          channel="fanpage"
+        <FanpageView
           data={data}
           onAdd={(week, values) => {
-            setData((prev) => [...prev, { ...prev[prev.length - 1], week, fanpage: values as any }]);
+            setData((prev) => [
+              ...prev,
+              {
+                ...prev[prev.length - 1],
+                week,
+                fanpage: {
+                  ...values,
+                  // Map về aggregate cũ để Overview vẫn hoạt động
+                  reach: values.totalViews,
+                  followers: prev[prev.length - 1].fanpage.followers + values.newFollowers - values.unfollows,
+                  engagement: values.likes + values.comments + values.shares,
+                } as any,
+              },
+            ]);
             toast({ title: "Đã tạo báo cáo Fanpage", description: `Tuần ${week}` });
           }}
         />
