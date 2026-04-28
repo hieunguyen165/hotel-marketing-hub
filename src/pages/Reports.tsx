@@ -10,7 +10,7 @@ import { weeklyReports as seed, WeeklyReport } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, AreaChart, Area,
+  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, Legend, FunnelChart, Funnel, LabelList,
 } from "recharts";
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
@@ -421,6 +421,244 @@ function ChannelView({
   );
 }
 
+/* ---------------- Fanpage Analytics Dashboard (chuyên sâu) ---------------- */
+function FanpageAnalytics({
+  data,
+  last,
+  prev,
+}: {
+  data: WeeklyReport[];
+  last: WeeklyReport;
+  prev: WeeklyReport;
+}) {
+  // 1. Stacked Area - Lượt Xem theo tuần
+  const viewsSeries = data.map((d) => ({
+    week: d.week,
+    "Video <1 phút": d.fanpage.videoUnder1minViews ?? 0,
+    "Video 3s": (d.fanpage.video3sViews ?? 0) - (d.fanpage.videoUnder1minViews ?? 0),
+    "View khác": Math.max(0, (d.fanpage.totalViews ?? 0) - (d.fanpage.video3sViews ?? 0)),
+  }));
+
+  // 2. Funnel - tỷ lệ giữ chân video
+  const funnelViews = [
+    { name: "Tổng Lượt Xem", value: last.fanpage.totalViews ?? 0, fill: "hsl(var(--primary))" },
+    { name: "Video 3s", value: last.fanpage.video3sViews ?? 0, fill: "hsl(258 88% 72%)" },
+    { name: "Video <1 phút", value: last.fanpage.videoUnder1minViews ?? 0, fill: "hsl(330 85% 65%)" },
+  ];
+  const retain3s = last.fanpage.totalViews ? Math.round(((last.fanpage.video3sViews ?? 0) / last.fanpage.totalViews) * 1000) / 10 : 0;
+  const retain1m = last.fanpage.video3sViews ? Math.round(((last.fanpage.videoUnder1minViews ?? 0) / last.fanpage.video3sViews) * 1000) / 10 : 0;
+
+  // 3. Grouped Bar - tương tác theo tuần
+  const engageSeries = data.map((d) => ({
+    week: d.week,
+    Like: d.fanpage.likes ?? 0,
+    "Bình luận": d.fanpage.comments ?? 0,
+    "Chia sẻ": d.fanpage.shares ?? 0,
+  }));
+
+  // 4. Donut - cơ cấu tương tác tuần này
+  const engageDonut = [
+    { name: "Like", value: last.fanpage.likes ?? 0, fill: "hsl(258 88% 62%)" },
+    { name: "Bình luận", value: last.fanpage.comments ?? 0, fill: "hsl(330 85% 60%)" },
+    { name: "Chia sẻ", value: last.fanpage.shares ?? 0, fill: "hsl(38 95% 55%)" },
+  ];
+  const totalEngage = engageDonut.reduce((s, x) => s + x.value, 0);
+  const qualityRate = totalEngage ? Math.round((((last.fanpage.comments ?? 0) + (last.fanpage.shares ?? 0)) / totalEngage) * 1000) / 10 : 0;
+
+  // 5. Diverging Bar - Follow vs Unfollow + Net Growth
+  const audienceSeries = data.map((d) => ({
+    week: d.week,
+    "Theo dõi": d.fanpage.newFollowers ?? 0,
+    "Bỏ theo dõi": -(d.fanpage.unfollows ?? 0),
+    Net: (d.fanpage.newFollowers ?? 0) - (d.fanpage.unfollows ?? 0),
+  }));
+
+  // 6. Funnel - Tin nhắn → Chuyển đổi
+  const msgFunnel = [
+    { name: "Tin nhắn mới", value: last.fanpage.newMessages ?? 0, fill: "hsl(160 75% 45%)" },
+    { name: "Chuyển đổi", value: last.fanpage.conversions ?? 0, fill: "hsl(258 88% 62%)" },
+  ];
+  const convRate = last.fanpage.newMessages ? Math.round(((last.fanpage.conversions ?? 0) / last.fanpage.newMessages) * 1000) / 10 : 0;
+  const convRatePrev = prev.fanpage.newMessages ? Math.round(((prev.fanpage.conversions ?? 0) / prev.fanpage.newMessages) * 1000) / 10 : 0;
+  const convRateDelta = Math.round((convRate - convRatePrev) * 10) / 10;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 pt-2">
+        <span className="h-1.5 w-8 rounded-full bg-gradient-brand" />
+        <h3 className="font-display text-xl font-semibold">Phân tích chuyên sâu</h3>
+        <Badge variant="secondary" className="ml-2">Tự động từ dữ liệu tuần</Badge>
+      </div>
+
+      {/* Lượt Xem: Stacked Area + Funnel */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-5 shadow-card-soft lg:col-span-2">
+          <div className="mb-1 flex items-center gap-2">
+            <Eye className="h-4 w-4 text-primary" />
+            <h4 className="font-display text-base font-semibold">Lượt Xem theo tuần (Stacked)</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Cấu trúc tổng view: View khác → Video 3s → Video &lt;1 phút.</p>
+          <ResponsiveContainer width="100%" height={260}>
+            <AreaChart data={viewsSeries}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Area type="monotone" dataKey="View khác" stackId="1" stroke="hsl(210 80% 70%)" fill="hsl(210 80% 70%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Video 3s" stackId="1" stroke="hsl(258 88% 65%)" fill="hsl(258 88% 65%)" fillOpacity={0.6} />
+              <Area type="monotone" dataKey="Video <1 phút" stackId="1" stroke="hsl(330 85% 60%)" fill="hsl(330 85% 60%)" fillOpacity={0.7} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5 shadow-card-soft">
+          <div className="mb-1 flex items-center gap-2">
+            <TrendingDown className="h-4 w-4 text-pink-500" />
+            <h4 className="font-display text-base font-semibold">Funnel giữ chân video</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Tỷ lệ rơi rớt từ View → 3s → 1 phút.</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <FunnelChart>
+              <Tooltip />
+              <Funnel dataKey="value" data={funnelViews} isAnimationActive>
+                <LabelList position="right" fill="hsl(var(--foreground))" stroke="none" dataKey="name" fontSize={11} />
+              </Funnel>
+            </FunnelChart>
+          </ResponsiveContainer>
+          <div className="mt-2 grid grid-cols-2 gap-2 text-center">
+            <div className="rounded-lg bg-secondary p-2">
+              <p className="text-[10px] uppercase text-muted-foreground">View → 3s</p>
+              <p className="font-display text-lg font-bold text-primary">{retain3s}%</p>
+            </div>
+            <div className="rounded-lg bg-secondary p-2">
+              <p className="text-[10px] uppercase text-muted-foreground">3s → 1 phút</p>
+              <p className="font-display text-lg font-bold text-pink-500">{retain1m}%</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      {/* Tương Tác: Grouped Bar + Donut */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-5 shadow-card-soft lg:col-span-2">
+          <div className="mb-1 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-pink-500" />
+            <h4 className="font-display text-base font-semibold">Tương Tác theo tuần</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">So sánh Like / Bình luận / Chia sẻ qua từng tuần.</p>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={engageSeries}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="Like" fill="hsl(258 88% 62%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Bình luận" fill="hsl(330 85% 60%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Chia sẻ" fill="hsl(38 95% 55%)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5 shadow-card-soft">
+          <div className="mb-1 flex items-center gap-2">
+            <Heart className="h-4 w-4 text-pink-500" />
+            <h4 className="font-display text-base font-semibold">Cơ cấu tương tác tuần này</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Tỷ trọng từng loại trong tổng tương tác.</p>
+          <ResponsiveContainer width="100%" height={200}>
+            <PieChart>
+              <Tooltip />
+              <Pie data={engageDonut} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
+                {engageDonut.map((e, i) => <Cell key={i} fill={e.fill} />)}
+              </Pie>
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="mt-2 rounded-lg bg-secondary p-2 text-center">
+            <p className="text-[10px] uppercase text-muted-foreground">Tỷ lệ tương tác chất lượng (Comment + Share)</p>
+            <p className="font-display text-lg font-bold text-foreground">{qualityRate}%</p>
+          </div>
+        </Card>
+      </div>
+
+      {/* Đối Tượng: Diverging + Net */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-5 shadow-card-soft lg:col-span-2">
+          <div className="mb-1 flex items-center gap-2">
+            <Users className="h-4 w-4 text-violet-500" />
+            <h4 className="font-display text-base font-semibold">Theo dõi vs Bỏ theo dõi</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Diverging Bar: dòng vào (xanh) — dòng ra (đỏ).</p>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={audienceSeries} stackOffset="sign">
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Bar dataKey="Theo dõi" fill="hsl(160 75% 45%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Bỏ theo dõi" fill="hsl(0 75% 60%)" radius={[0, 0, 6, 6]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5 shadow-card-soft">
+          <div className="mb-1 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <h4 className="font-display text-base font-semibold">Net Follower Growth</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Tăng trưởng ròng = Follow − Unfollow.</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={audienceSeries}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Line type="monotone" dataKey="Net" stroke="hsl(160 75% 45%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(160 75% 45%)" }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      {/* Tin Nhắn: Funnel + Conversion KPI */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="p-5 shadow-card-soft lg:col-span-2">
+          <div className="mb-1 flex items-center gap-2">
+            <Mail className="h-4 w-4 text-emerald-500" />
+            <h4 className="font-display text-base font-semibold">Funnel Tin nhắn → Chuyển đổi</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Hành trình từ inbox đến đơn đặt phòng.</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <FunnelChart>
+              <Tooltip />
+              <Funnel dataKey="value" data={msgFunnel} isAnimationActive>
+                <LabelList position="right" fill="hsl(var(--foreground))" stroke="none" dataKey="name" fontSize={12} />
+                <LabelList position="center" fill="#fff" stroke="none" dataKey="value" fontSize={14} />
+              </Funnel>
+            </FunnelChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="border-0 bg-gradient-brand p-5 text-primary-foreground shadow-elegant">
+          <p className="text-xs uppercase tracking-wider opacity-90">Conversion Rate</p>
+          <p className="mt-2 font-display text-5xl font-bold">{convRate}%</p>
+          <div className="mt-2 flex items-center gap-1 text-sm font-medium">
+            {convRateDelta >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+            {convRateDelta >= 0 ? "+" : ""}{convRateDelta}% so với tuần trước
+          </div>
+          <div className="mt-4 space-y-1 text-xs opacity-90">
+            <p>Tin nhắn mới: <strong>{(last.fanpage.newMessages ?? 0).toLocaleString("vi-VN")}</strong></p>
+            <p>Chuyển đổi: <strong>{(last.fanpage.conversions ?? 0).toLocaleString("vi-VN")}</strong></p>
+            <p className="pt-2 italic opacity-80">Mục tiêu khuyến nghị: ≥ 15%</p>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 /* ---------------- Helpers ---------------- */
 function pct(now: number, before: number) {
   if (!before) return 0;
@@ -593,6 +831,9 @@ function FanpageView({
       })}
 
       {/* Trend chart - tổng lượt xem & tương tác */}
+      {/* === DASHBOARD PHÂN TÍCH CHUYÊN SÂU === */}
+      <FanpageAnalytics data={data} last={last} prev={prev} />
+
       <Card className="p-5 shadow-card-soft">
         <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng Lượt Xem & Tương Tác</h3>
         <ResponsiveContainer width="100%" height={280}>
