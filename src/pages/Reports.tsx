@@ -16,6 +16,8 @@ import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
   Globe, Megaphone, MessageCircle, LayoutGrid, Eye, Heart, Users, Mail,
 } from "lucide-react";
+import { Filter } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
 
@@ -281,13 +283,20 @@ function ChannelView({
 }) {
   const meta = channelMeta[channel];
   const Icon = meta.icon;
-  const last = data[data.length - 1];
-  const prev = data[data.length - 2];
-
-  const series = useMemo(() => data.map((d) => ({ week: d.week, ...d[channel] as any })), [data, channel]);
-
   const fields = channelFields[channel];
-  const [week, setWeek] = useState(`T${parseInt(last.week.replace("T", "")) + 1}`);
+
+  // Bộ lọc Tuần / Tháng / Năm
+  const [period, setPeriod] = useState<"week" | "month" | "year">("week");
+  const series = useMemo(
+    () => aggregateByPeriod(data, channel, fields, period),
+    [data, channel, fields, period]
+  );
+  const last = series[series.length - 1];
+  const prev = series[series.length - 2];
+  const periodLabel = period === "week" ? "tuần" : period === "month" ? "tháng" : "năm";
+
+  const lastRaw = data[data.length - 1];
+  const [week, setWeek] = useState(`T${parseInt(lastRaw.week.replace("T", "")) + 1}`);
   const [values, setValues] = useState<Record<string, string>>(
     Object.fromEntries(fields.map((f) => [f.key, ""]))
   );
@@ -305,22 +314,42 @@ function ChannelView({
     <div className="space-y-6">
       {/* Hero */}
       <Card className={`border-0 p-6 text-white shadow-elegant md:p-7 bg-gradient-to-br ${meta.color}`}>
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
-            <Icon className="h-6 w-6" />
-          </span>
-          <div>
-            <Badge className="mb-1 bg-white/20 text-white hover:bg-white/20">Kênh {meta.title}</Badge>
-            <h2 className="font-display text-2xl font-bold">Báo cáo {meta.title} — Tuần {last.week}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
+              <Icon className="h-6 w-6" />
+            </span>
+            <div>
+              <Badge className="mb-1 bg-white/20 text-white hover:bg-white/20">Kênh {meta.title}</Badge>
+              <h2 className="font-display text-2xl font-bold">Báo cáo {meta.title} — {last.label}</h2>
+            </div>
+          </div>
+          <div className="rounded-xl bg-white/15 p-1 backdrop-blur">
+            <Tabs value={period} onValueChange={(v) => setPeriod(v as "week" | "month" | "year")}>
+              <TabsList className="bg-transparent">
+                <TabsTrigger value="week" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Tuần</TabsTrigger>
+                <TabsTrigger value="month" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Tháng</TabsTrigger>
+                <TabsTrigger value="year" className="text-white data-[state=active]:bg-white data-[state=active]:text-foreground">Năm</TabsTrigger>
+              </TabsList>
+            </Tabs>
           </div>
         </div>
       </Card>
 
+      {/* Filter info bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Filter className="h-4 w-4 text-primary" />
+          Đang xem theo <strong className="text-foreground">{periodLabel}</strong> · {series.length} kỳ · so sánh với {periodLabel} liền trước
+        </div>
+        <Badge variant="secondary" className="text-xs">{last.label}</Badge>
+      </div>
+
       {/* KPI cards */}
       <div className="grid gap-4 md:grid-cols-3">
         {fields.map((f) => {
-          const now = (last[channel] as any)[f.key] as number;
-          const before = (prev[channel] as any)[f.key] as number;
+          const now = ((last as any)[f.key] ?? 0) as number;
+          const before = prev ? (((prev as any)[f.key] ?? 0) as number) : 0;
           const delta = pct(now, before);
           const invert = channel === "ads" && (f.key === "spend" || f.key === "cpa");
           const positive = invert ? delta < 0 : delta > 0;
@@ -330,7 +359,7 @@ function ChannelView({
               <p className="mt-2 font-display text-3xl font-bold">{now.toLocaleString("vi-VN")}</p>
               <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${positive ? "text-success" : "text-destructive"}`}>
                 {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {fmt(delta)} so với tuần trước
+                {fmt(delta)} so với {periodLabel} trước
               </div>
             </Card>
           );
@@ -339,11 +368,11 @@ function ChannelView({
 
       {/* Trend chart */}
       <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng {meta.title}</h3>
+        <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng {meta.title} (theo {periodLabel})</h3>
         <ResponsiveContainer width="100%" height={280}>
           <LineChart data={series}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={12} />
             <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
             <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
             {fields.slice(0, 2).map((f, i) => (
@@ -363,22 +392,22 @@ function ChannelView({
 
       {/* Weekly history */}
       <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Lịch sử báo cáo tuần</h3>
+        <h3 className="mb-4 font-display text-lg font-semibold">Lịch sử báo cáo theo {periodLabel}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="py-2 pr-4">Tuần</th>
+                <th className="py-2 pr-4">{period === "week" ? "Tuần" : period === "month" ? "Tháng" : "Năm"}</th>
                 {fields.map((f) => <th key={f.key} className="py-2 pr-4">{f.label}</th>)}
               </tr>
             </thead>
             <tbody>
-              {[...data].reverse().map((d) => (
-                <tr key={d.week} className="border-b border-border/60">
-                  <td className="py-2 pr-4 font-medium">{d.week}</td>
+              {[...series].reverse().map((d) => (
+                <tr key={d.label} className="border-b border-border/60">
+                  <td className="py-2 pr-4 font-medium">{d.label}</td>
                   {fields.map((f) => (
                     <td key={f.key} className="py-2 pr-4 text-muted-foreground">
-                      {((d[channel] as any)[f.key] as number).toLocaleString("vi-VN")}
+                      {(((d as any)[f.key] ?? 0) as number).toLocaleString("vi-VN")}
                     </td>
                   ))}
                 </tr>
@@ -786,6 +815,59 @@ function pct(now: number, before: number) {
 function fmt(n: number) {
   const sign = n > 0 ? "+" : "";
   return `${sign}${n}%`;
+}
+
+/**
+ * Gộp dữ liệu theo Tuần / Tháng / Năm.
+ * Giả định nhãn tuần có dạng "T13"..."T52" trong năm hiện tại (2026).
+ * - Tuần: giữ nguyên từng tuần.
+ * - Tháng: gộp 4 tuần liên tiếp (T1-T4 = Tháng 1, T5-T8 = Tháng 2, ...).
+ * - Năm: cộng dồn toàn bộ tuần.
+ * Các chỉ số tỷ lệ (conversion, cpa) được tính lại bằng trung bình có trọng số.
+ */
+function aggregateByPeriod(
+  data: WeeklyReport[],
+  channel: "website" | "ads",
+  fields: { key: string; label: string }[],
+  period: "week" | "month" | "year",
+) {
+  const year = 2026;
+  const rows = data.map((d) => {
+    const wk = parseInt(d.week.replace(/\D/g, "")) || 1;
+    const month = Math.min(12, Math.ceil(wk / 4));
+    return { wk, month, year, raw: (d as any)[channel] as Record<string, number>, week: d.week };
+  });
+
+  if (period === "week") {
+    return rows.map((r) => ({ label: r.week, ...r.raw }));
+  }
+
+  // Group by month or year
+  const groups = new Map<string, typeof rows>();
+  for (const r of rows) {
+    const key = period === "month" ? `T${r.month}/${r.year}` : `${r.year}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(r);
+  }
+
+  return Array.from(groups.entries()).map(([label, items]) => {
+    const agg: Record<string, number> = { };
+    for (const f of fields) {
+      const isRate = f.key === "conversion" || f.key === "cpa";
+      if (isRate) {
+        // Trung bình có trọng số: cpa theo bookings; conversion theo sessions
+        const weightKey = f.key === "cpa" ? "bookings" : "sessions";
+        const totalWeight = items.reduce((s, it) => s + (it.raw[weightKey] ?? 0), 0);
+        agg[f.key] = totalWeight
+          ? Math.round(items.reduce((s, it) => s + (it.raw[f.key] ?? 0) * (it.raw[weightKey] ?? 0), 0) / totalWeight)
+          : 0;
+        if (f.key === "conversion") agg[f.key] = Math.round(agg[f.key] * 100) / 100;
+      } else {
+        agg[f.key] = items.reduce((s, it) => s + (it.raw[f.key] ?? 0), 0);
+      }
+    }
+    return { label, ...agg };
+  });
 }
 function ChannelCard({ title, data }: { title: string; data: { label: string; value: any; delta: number; invert?: boolean }[] }) {
   return (
