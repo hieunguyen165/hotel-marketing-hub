@@ -10,7 +10,7 @@ import { weeklyReports as seed, WeeklyReport } from "@/data/mockData";
 import { useToast } from "@/hooks/use-toast";
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, AreaChart, Area,
+  BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell, Legend, FunnelChart, Funnel, LabelList,
 } from "recharts";
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
