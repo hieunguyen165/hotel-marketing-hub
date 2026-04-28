@@ -253,9 +253,9 @@ function ConsolidatedFunnel({ last }: { last: FanpageAggRow }) {
         <Sparkles className="h-4 w-4 text-primary" />
         <h3 className="font-display text-base font-semibold">Funnel tổng hợp: View → Chuyển đổi</h3>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <div>
-          <ResponsiveContainer width="100%" height={260}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="mx-auto w-full max-w-[420px]">
+          <ResponsiveContainer width="100%" height={240}>
             <FunnelChart>
               <Tooltip />
               <Funnel dataKey="value" data={steps} isAnimationActive>
