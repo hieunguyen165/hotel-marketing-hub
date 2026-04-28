@@ -257,16 +257,11 @@ function OverviewView({ data, last, prev }: { data: WeeklyReport[]; last: Weekly
 }
 
 /* ---------------- Channel View ---------------- */
-const channelFields: Record<"website" | "fanpage" | "ads", { key: string; label: string }[]> = {
+const channelFields: Record<"website" | "ads", { key: string; label: string }[]> = {
   website: [
     { key: "sessions", label: "Sessions" },
     { key: "bookings", label: "Đặt phòng" },
     { key: "conversion", label: "Conversion (%)" },
-  ],
-  fanpage: [
-    { key: "reach", label: "Reach" },
-    { key: "followers", label: "Followers" },
-    { key: "engagement", label: "Engagement" },
   ],
   ads: [
     { key: "spend", label: "Chi phí (VND)" },
@@ -280,7 +275,7 @@ function ChannelView({
   data,
   onAdd,
 }: {
-  channel: "website" | "fanpage" | "ads";
+  channel: "website" | "ads";
   data: WeeklyReport[];
   onAdd: (week: string, values: Record<string, number>) => void;
 }) {
