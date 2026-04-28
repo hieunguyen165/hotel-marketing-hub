@@ -133,8 +133,8 @@ const Accounts = () => {
         </Tabs>
       </div>
 
-      {/* List — 3 cols */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* List — 5 cols */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {filtered.map((a) => {
           const Style = importanceStyles[a.importance];
           const Icon = Style.icon;
