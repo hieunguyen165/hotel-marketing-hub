@@ -490,21 +490,21 @@ function FanpageAnalytics({
         <Badge variant="secondary" className="ml-2">Tự động từ dữ liệu tuần</Badge>
       </div>
 
-      {/* Lượt Xem: Stacked Area + Funnel */}
+      {/* HÀNG 1 — Lượt Xem (3 biểu đồ) */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-5 shadow-card-soft lg:col-span-2">
+        <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <Eye className="h-4 w-4 text-primary" />
-            <h4 className="font-display text-base font-semibold">Lượt Xem theo tuần (Stacked)</h4>
+            <h4 className="font-display text-base font-semibold">Lượt Xem theo tuần</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Cấu trúc tổng view: View khác → Video 3s → Video &lt;1 phút.</p>
-          <ResponsiveContainer width="100%" height={260}>
+          <p className="mb-3 text-xs text-muted-foreground">Stacked: View khác / 3s / &lt;1 phút.</p>
+          <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={viewsSeries}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Area type="monotone" dataKey="View khác" stackId="1" stroke="hsl(210 80% 70%)" fill="hsl(210 80% 70%)" fillOpacity={0.5} />
               <Area type="monotone" dataKey="Video 3s" stackId="1" stroke="hsl(258 88% 65%)" fill="hsl(258 88% 65%)" fillOpacity={0.6} />
               <Area type="monotone" dataKey="Video <1 phút" stackId="1" stroke="hsl(330 85% 60%)" fill="hsl(330 85% 60%)" fillOpacity={0.7} />
@@ -517,12 +517,12 @@ function FanpageAnalytics({
             <TrendingDown className="h-4 w-4 text-pink-500" />
             <h4 className="font-display text-base font-semibold">Funnel giữ chân video</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Tỷ lệ rơi rớt từ View → 3s → 1 phút.</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <p className="mb-3 text-xs text-muted-foreground">Tỷ lệ rơi rớt View → 3s → 1 phút.</p>
+          <ResponsiveContainer width="100%" height={160}>
             <FunnelChart>
               <Tooltip />
               <Funnel dataKey="value" data={funnelViews} isAnimationActive>
-                <LabelList position="right" fill="hsl(var(--foreground))" stroke="none" dataKey="name" fontSize={11} />
+                <LabelList position="right" fill="hsl(var(--foreground))" stroke="none" dataKey="name" fontSize={10} />
               </Funnel>
             </FunnelChart>
           </ResponsiveContainer>
@@ -537,37 +537,37 @@ function FanpageAnalytics({
             </div>
           </div>
         </Card>
-      </div>
 
-      {/* Tương Tác: Grouped Bar + Donut */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-5 shadow-card-soft lg:col-span-2">
+        <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <Heart className="h-4 w-4 text-pink-500" />
             <h4 className="font-display text-base font-semibold">Tương Tác theo tuần</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">So sánh Like / Bình luận / Chia sẻ qua từng tuần.</p>
-          <ResponsiveContainer width="100%" height={260}>
+          <p className="mb-3 text-xs text-muted-foreground">Like / Bình luận / Chia sẻ.</p>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={engageSeries}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="Like" fill="hsl(258 88% 62%)" radius={[6, 6, 0, 0]} />
               <Bar dataKey="Bình luận" fill="hsl(330 85% 60%)" radius={[6, 6, 0, 0]} />
               <Bar dataKey="Chia sẻ" fill="hsl(38 95% 55%)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
+      </div>
 
+      {/* HÀNG 2 — Tương tác / Đối tượng / Tin nhắn (3 biểu đồ) */}
+      <div className="grid gap-6 lg:grid-cols-3">
         <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <Heart className="h-4 w-4 text-pink-500" />
-            <h4 className="font-display text-base font-semibold">Cơ cấu tương tác tuần này</h4>
+            <h4 className="font-display text-base font-semibold">Cơ cấu tương tác</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Tỷ trọng từng loại trong tổng tương tác.</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <p className="mb-3 text-xs text-muted-foreground">Tỷ trọng tuần {last.week}.</p>
+          <ResponsiveContainer width="100%" height={180}>
             <PieChart>
               <Tooltip />
               <Pie data={engageDonut} dataKey="value" nameKey="name" innerRadius={45} outerRadius={75} paddingAngle={2}>
@@ -577,27 +577,24 @@ function FanpageAnalytics({
             </PieChart>
           </ResponsiveContainer>
           <div className="mt-2 rounded-lg bg-secondary p-2 text-center">
-            <p className="text-[10px] uppercase text-muted-foreground">Tỷ lệ tương tác chất lượng (Comment + Share)</p>
+            <p className="text-[10px] uppercase text-muted-foreground">Tương tác chất lượng (Cmt + Share)</p>
             <p className="font-display text-lg font-bold text-foreground">{qualityRate}%</p>
           </div>
         </Card>
-      </div>
 
-      {/* Đối Tượng: Diverging + Net */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-5 shadow-card-soft lg:col-span-2">
+        <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <Users className="h-4 w-4 text-violet-500" />
             <h4 className="font-display text-base font-semibold">Theo dõi vs Bỏ theo dõi</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Diverging Bar: dòng vào (xanh) — dòng ra (đỏ).</p>
-          <ResponsiveContainer width="100%" height={260}>
+          <p className="mb-3 text-xs text-muted-foreground">Dòng vào (xanh) — dòng ra (đỏ).</p>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={audienceSeries} stackOffset="sign">
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="Theo dõi" fill="hsl(160 75% 45%)" radius={[6, 6, 0, 0]} />
               <Bar dataKey="Bỏ theo dõi" fill="hsl(0 75% 60%)" radius={[0, 0, 6, 6]} />
             </BarChart>
@@ -607,14 +604,14 @@ function FanpageAnalytics({
         <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <TrendingUp className="h-4 w-4 text-emerald-500" />
-            <h4 className="font-display text-base font-semibold">Net Follower Growth</h4>
+            <h4 className="font-display text-base font-semibold">Tăng trưởng ròng (Net)</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Tăng trưởng ròng = Follow − Unfollow.</p>
+          <p className="mb-3 text-xs text-muted-foreground">Net = Follow − Unfollow.</p>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={audienceSeries}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
               <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
               <Line type="monotone" dataKey="Net" stroke="hsl(160 75% 45%)" strokeWidth={2.5} dot={{ r: 4, fill: "hsl(160 75% 45%)" }} />
             </LineChart>
@@ -622,14 +619,14 @@ function FanpageAnalytics({
         </Card>
       </div>
 
-      {/* Tin Nhắn: Funnel + Conversion KPI */}
+      {/* HÀNG 3 — Tin nhắn (3 cột) */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="p-5 shadow-card-soft lg:col-span-2">
+        <Card className="p-5 shadow-card-soft">
           <div className="mb-1 flex items-center gap-2">
             <Mail className="h-4 w-4 text-emerald-500" />
-            <h4 className="font-display text-base font-semibold">Funnel Tin nhắn → Chuyển đổi</h4>
+            <h4 className="font-display text-base font-semibold">Funnel Inbox → Đơn</h4>
           </div>
-          <p className="mb-3 text-xs text-muted-foreground">Hành trình từ inbox đến đơn đặt phòng.</p>
+          <p className="mb-3 text-xs text-muted-foreground">Hành trình từ inbox đến chuyển đổi.</p>
           <ResponsiveContainer width="100%" height={220}>
             <FunnelChart>
               <Tooltip />
@@ -641,9 +638,32 @@ function FanpageAnalytics({
           </ResponsiveContainer>
         </Card>
 
+        <Card className="p-5 shadow-card-soft">
+          <div className="mb-1 flex items-center gap-2">
+            <Mail className="h-4 w-4 text-emerald-500" />
+            <h4 className="font-display text-base font-semibold">Tin nhắn theo tuần</h4>
+          </div>
+          <p className="mb-3 text-xs text-muted-foreground">Inbox mới vs Chuyển đổi.</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={data.map((d) => ({
+              week: d.week,
+              "Tin nhắn": d.fanpage.newMessages ?? 0,
+              "Chuyển đổi": d.fanpage.conversions ?? 0,
+            }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} />
+              <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Bar dataKey="Tin nhắn" fill="hsl(160 75% 55%)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Chuyển đổi" fill="hsl(258 88% 62%)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
         <Card className="border-0 bg-gradient-brand p-5 text-primary-foreground shadow-elegant">
           <p className="text-xs uppercase tracking-wider opacity-90">Conversion Rate</p>
-          <p className="mt-2 font-display text-5xl font-bold">{convRate}%</p>
+          <p className="mt-2 font-display text-4xl font-bold">{convRate}%</p>
           <div className="mt-2 flex items-center gap-1 text-sm font-medium">
             {convRateDelta >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
             {convRateDelta >= 0 ? "+" : ""}{convRateDelta}% so với tuần trước
@@ -656,6 +676,105 @@ function FanpageAnalytics({
         </Card>
       </div>
     </div>
+  );
+}
+
+/* ---------------- Fanpage Metrics Sheet (bảng số liệu kiểu spreadsheet) ---------------- */
+function FanpageMetricsSheet({
+  data,
+  allFields,
+  groups,
+}: {
+  data: WeeklyReport[];
+  allFields: { key: string; label: string; invert?: boolean }[];
+  groups: { title: string; color: string; fields: { key: string; label: string; invert?: boolean }[] }[];
+}) {
+  const weeks = data;
+  const fieldGroupColor = (key: string) => {
+    const g = groups.find((gr) => gr.fields.some((f) => f.key === key));
+    return g?.color ?? "from-slate-400 to-slate-500";
+  };
+
+  return (
+    <Card className="overflow-hidden shadow-card-soft">
+      <div className="flex items-center justify-between border-b border-border bg-secondary/40 px-5 py-3">
+        <div className="flex items-center gap-2">
+          <LayoutGrid className="h-4 w-4 text-primary" />
+          <h3 className="font-display text-base font-semibold">Bảng số liệu Fanpage (theo tuần)</h3>
+        </div>
+        <Badge variant="secondary" className="text-[10px]">
+          ▲ tăng · ▼ giảm so với tuần liền trước
+        </Badge>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-sm">
+          <thead className="bg-card sticky top-0">
+            <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
+              <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-semibold">Chỉ số</th>
+              {weeks.map((w) => (
+                <th key={w.week} className="px-3 py-3 text-right font-semibold">{w.week}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {groups.map((group) => (
+              <FragmentGroup key={group.title} group={group} weeks={weeks} fieldGroupColor={fieldGroupColor} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+function FragmentGroup({
+  group,
+  weeks,
+  fieldGroupColor,
+}: {
+  group: { title: string; color: string; fields: { key: string; label: string; invert?: boolean }[] };
+  weeks: WeeklyReport[];
+  fieldGroupColor: (k: string) => string;
+}) {
+  return (
+    <>
+      <tr className="bg-secondary/30">
+        <td colSpan={weeks.length + 1} className="px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className={`h-2 w-2 rounded-full bg-gradient-to-br ${group.color}`} />
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{group.title}</span>
+          </div>
+        </td>
+      </tr>
+      {group.fields.map((f) => (
+        <tr key={f.key} className="border-b border-border/50 hover:bg-secondary/20">
+          <td className="sticky left-0 z-10 bg-card px-4 py-2.5 font-medium text-foreground">
+            <div className="flex items-center gap-2">
+              <span className={`h-1.5 w-1.5 rounded-full bg-gradient-to-br ${fieldGroupColor(f.key)}`} />
+              {f.label}
+            </div>
+          </td>
+          {weeks.map((w, idx) => {
+            const cur = ((w.fanpage as any)[f.key] ?? 0) as number;
+            const prevW = idx > 0 ? (((weeks[idx - 1].fanpage as any)[f.key] ?? 0) as number) : null;
+            const delta = prevW !== null ? pct(cur, prevW) : null;
+            const positive = delta !== null && (f.invert ? delta < 0 : delta > 0);
+            const negative = delta !== null && delta !== 0 && !positive;
+            return (
+              <td key={w.week} className="px-3 py-2.5 text-right tabular-nums">
+                <div className="font-medium text-foreground">{cur.toLocaleString("vi-VN")}</div>
+                {delta !== null && delta !== 0 && (
+                  <div className={`text-[10px] font-medium ${positive ? "text-success" : "text-destructive"}`}>
+                    {positive ? "▲" : "▼"} {Math.abs(delta)}%
+                  </div>
+                )}
+                {delta === 0 && <div className="text-[10px] text-muted-foreground">—</div>}
+              </td>
+            );
+          })}
+        </tr>
+      ))}
+    </>
   );
 }
 
@@ -797,87 +916,11 @@ function FanpageView({
         </div>
       </Card>
 
-      {/* Grouped KPI sections */}
-      {fanpageGroups.map((group) => {
-        const GIcon = group.icon;
-        return (
-          <div key={group.title} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${group.color} text-white shadow-card-soft`}>
-                <GIcon className="h-4 w-4" />
-              </span>
-              <h3 className="font-display text-lg font-semibold">{group.title}</h3>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {group.fields.map((f) => {
-                const now = (last.fanpage as any)[f.key] as number;
-                const before = (prev.fanpage as any)[f.key] as number;
-                const delta = pct(now, before);
-                const positive = f.invert ? delta < 0 : delta > 0;
-                return (
-                  <Card key={f.key} className="p-5 shadow-card-soft">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{f.label}</p>
-                    <p className="mt-2 font-display text-3xl font-bold">{(now ?? 0).toLocaleString("vi-VN")}</p>
-                    <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${positive ? "text-success" : "text-destructive"}`}>
-                      {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {fmt(delta)} so với tuần trước
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Trend chart - tổng lượt xem & tương tác */}
-      {/* === DASHBOARD PHÂN TÍCH CHUYÊN SÂU === */}
+      {/* === BIỂU ĐỒ PHÂN TÍCH CHUYÊN SÂU (lên đầu, 3 cột) === */}
       <FanpageAnalytics data={data} last={last} prev={prev} />
 
-      <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng Lượt Xem & Tương Tác</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={data.map((d) => ({
-            week: d.week,
-            totalViews: d.fanpage.totalViews,
-            engagement: (d.fanpage.likes ?? 0) + (d.fanpage.comments ?? 0) + (d.fanpage.shares ?? 0),
-          }))}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-            <Line type="monotone" dataKey="totalViews" name="Tổng Lượt Xem" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
-            <Line type="monotone" dataKey="engagement" name="Tương Tác" stroke="hsl(var(--accent))" strokeWidth={2.5} dot={{ r: 3 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
-
-      {/* Weekly history */}
-      <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Lịch sử báo cáo tuần</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="py-2 pr-4">Tuần</th>
-                {allFields.map((f) => <th key={f.key} className="py-2 pr-4 whitespace-nowrap">{f.label}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {[...data].reverse().map((d) => (
-                <tr key={d.week} className="border-b border-border/60">
-                  <td className="py-2 pr-4 font-medium">{d.week}</td>
-                  {allFields.map((f) => (
-                    <td key={f.key} className="py-2 pr-4 text-muted-foreground">
-                      {(((d.fanpage as any)[f.key] as number) ?? 0).toLocaleString("vi-VN")}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
+      <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
 
       {/* Add weekly report - grouped form */}
       <Card className="p-5 shadow-card-soft">
