@@ -68,30 +68,29 @@ const Accounts = () => {
           const Style = importanceStyles[a.importance];
           const Icon = Style.icon;
           return (
-            <Card key={a.id} className="group relative flex flex-col overflow-hidden border border-border/60 glass p-5 transition-smooth hover:border-primary/40 hover:shadow-glow">
-              <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-primary/0 blur-2xl transition-smooth group-hover:bg-primary/10" />
+            <Card key={a.id} className="group relative flex flex-col overflow-hidden border border-border bg-card p-5 shadow-card-soft transition-smooth hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-elegant">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <Badge variant="outline" className="mb-2 border-border/60 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <Badge variant="outline" className="mb-2 rounded-full border-border bg-secondary text-[10px] uppercase tracking-wider text-muted-foreground">
                     {a.category}
                   </Badge>
-                  <h3 className="font-display text-lg font-semibold leading-snug tracking-tight text-foreground">{a.name}</h3>
+                  <h3 className="font-display text-lg font-bold leading-snug tracking-tight text-foreground">{a.name}</h3>
                 </div>
-                <Badge className={`shrink-0 border font-mono text-[10px] uppercase ${Style.className}`}>
+                <Badge className={`shrink-0 rounded-full border text-[10px] uppercase ${Style.className}`}>
                   <Icon className="mr-1 h-3 w-3" /> {a.importance}
                 </Badge>
               </div>
 
               <p className="mb-4 text-sm leading-relaxed text-muted-foreground">{a.description}</p>
 
-              <div className="mt-auto space-y-2 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+              <div className="mt-auto space-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2"><User2 className="h-3.5 w-3.5 text-primary" /> Phụ trách: <span className="font-medium text-foreground">{a.owner}</span></div>
-                <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-primary" /> Cập nhật: <span className="font-mono text-foreground/80">{a.lastUpdated}</span></div>
+                <div className="flex items-center gap-2"><Calendar className="h-3.5 w-3.5 text-primary" /> Cập nhật: <span className="text-foreground/80">{a.lastUpdated}</span></div>
               </div>
 
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="mt-4 w-full border-primary/30 bg-primary/5 text-primary transition-smooth hover:bg-primary hover:text-primary-foreground hover:shadow-gold">
+                  <Button variant="outline" className="mt-4 w-full rounded-full border-primary/30 bg-accent-soft text-primary transition-smooth hover:bg-gradient-brand hover:border-transparent hover:text-primary-foreground hover:shadow-gold">
                     <ClipboardList className="mr-2 h-4 w-4" /> Quy trình bàn giao
                   </Button>
                 </DialogTrigger>
@@ -125,15 +124,15 @@ const Accounts = () => {
 
 function SummaryStat({ label, value, tone, hint }: { label: string; value: number; tone: "danger" | "warning" | "success"; hint: string }) {
   const toneClass = {
-    danger: { bar: "bg-destructive", glow: "shadow-[0_0_20px_hsl(var(--destructive)/0.3)]", text: "text-destructive" },
-    warning: { bar: "bg-warning", glow: "shadow-[0_0_20px_hsl(var(--warning)/0.3)]", text: "text-warning" },
-    success: { bar: "bg-success", glow: "shadow-[0_0_20px_hsl(var(--success)/0.3)]", text: "text-success" },
+    danger:  { bg: "bg-destructive/10", text: "text-destructive", bar: "bg-destructive" },
+    warning: { bg: "bg-warning/10",     text: "text-warning",     bar: "bg-warning" },
+    success: { bg: "bg-success/10",     text: "text-success",     bar: "bg-success" },
   }[tone];
   return (
-    <Card className="relative overflow-hidden border border-border/60 glass p-4">
-      <div className={`absolute left-0 top-0 h-full w-0.5 ${toneClass.bar} ${toneClass.glow}`} />
-      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
-      <p className="mt-1 font-display text-3xl font-semibold tracking-tight text-foreground">
+    <Card className="relative overflow-hidden border border-border bg-card p-4 shadow-card-soft">
+      <div className={`absolute left-0 top-0 h-full w-1 ${toneClass.bar}`} />
+      <p className="text-xs font-medium text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground">
         {value} <span className="text-sm font-normal text-muted-foreground">tài khoản</span>
       </p>
       <p className={`mt-1 text-xs ${toneClass.text}`}>{hint}</p>
