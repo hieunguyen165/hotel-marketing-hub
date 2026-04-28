@@ -10,6 +10,10 @@ export interface MarketingAccount {
   description: string;
   handoverNote: string;
   lastUpdated: string;
+  loginUrl?: string;
+  username?: string;
+  password?: string;
+  guide?: string;
 }
 
 export const accounts: MarketingAccount[] = [
@@ -22,6 +26,10 @@ export const accounts: MarketingAccount[] = [
     description: "Tài khoản quản trị tên miền và hosting chính. Mất tài khoản này = mất website.",
     handoverNote: "Chuyển quyền sở hữu domain qua Cloudflare. Cập nhật email khôi phục về email công ty.",
     lastUpdated: "2026-04-12",
+    loginUrl: "https://dash.cloudflare.com",
+    username: "admin@dlioro-hotel.com",
+    password: "Dlioro@2026#hosting",
+    guide: "Đăng nhập Cloudflare → chọn domain dlioro-hotel.com → quản lý DNS, SSL. Hosting truy cập qua cPanel link riêng.",
   },
   {
     id: "a2",
@@ -32,6 +40,10 @@ export const accounts: MarketingAccount[] = [
     description: "Fanpage chính 28K follow. Tài sản truyền thông quan trọng nhất.",
     handoverNote: "Thêm người mới vào Business Manager với vai trò Admin trước khi gỡ người cũ.",
     lastUpdated: "2026-04-20",
+    loginUrl: "https://business.facebook.com",
+    username: "marketing@dlioro-hotel.com",
+    password: "Dlioro@FB2026",
+    guide: "Vào Business Manager → Pages → D'lioro Hotel. Mọi thao tác qua BM, không dùng tài khoản cá nhân.",
   },
   {
     id: "a3",
@@ -42,6 +54,10 @@ export const accounts: MarketingAccount[] = [
     description: "Tài khoản chạy quảng cáo Facebook/Instagram. Liên kết thẻ thanh toán công ty.",
     handoverNote: "Bàn giao quyền Admin BM. Kiểm tra hạn mức chi tiêu và phương thức thanh toán.",
     lastUpdated: "2026-04-22",
+    loginUrl: "https://adsmanager.facebook.com",
+    username: "ads@dlioro-hotel.com",
+    password: "DlioroAds#2026",
+    guide: "Ads Manager → Account: D'lioro Hotel Ads. Kiểm tra Billing trước khi launch campaign mới.",
   },
   {
     id: "a4",
@@ -52,6 +68,10 @@ export const accounts: MarketingAccount[] = [
     description: "Chạy Search & Performance Max cho từ khóa khách sạn Đà Lạt.",
     handoverNote: "Mời email mới với quyền Standard, sau đó nâng Admin.",
     lastUpdated: "2026-04-15",
+    loginUrl: "https://ads.google.com",
+    username: "marketing@dlioro-hotel.com",
+    password: "DlioroGads@2026",
+    guide: "Customer ID: 123-456-7890. Chỉ dừng campaign, không xóa lịch sử.",
   },
   {
     id: "a5",
@@ -62,6 +82,10 @@ export const accounts: MarketingAccount[] = [
     description: "Quản lý phòng, giá, lịch trên Booking.com.",
     handoverNote: "Yêu cầu Booking đổi email liên hệ chính. Cập nhật 2FA về số điện thoại lễ tân.",
     lastUpdated: "2026-04-18",
+    loginUrl: "https://admin.booking.com",
+    username: "dlioro_hotel",
+    password: "Booking@Dlioro2026",
+    guide: "Cập nhật giá & inventory hàng ngày. 2FA gửi về SĐT lễ tân 0263xxx.",
   },
   {
     id: "a6",
@@ -72,6 +96,10 @@ export const accounts: MarketingAccount[] = [
     description: "Hệ thống quản lý kênh Agoda.",
     handoverNote: "Tạo sub-account riêng cho nhân sự mới.",
     lastUpdated: "2026-04-10",
+    loginUrl: "https://ycs.agoda.com",
+    username: "dlioro.hotel",
+    password: "Agoda@2026",
+    guide: "Mỗi nhân sự phải có sub-account riêng, không dùng chung.",
   },
   {
     id: "a7",
@@ -82,6 +110,10 @@ export const accounts: MarketingAccount[] = [
     description: "Email dùng để đăng ký mọi tài khoản marketing.",
     handoverNote: "Đổi mật khẩu, cập nhật số điện thoại khôi phục về số công ty.",
     lastUpdated: "2026-04-25",
+    loginUrl: "https://mail.google.com",
+    username: "marketing@dlioro-hotel.com",
+    password: "DlioroMail@2026",
+    guide: "Email gốc dùng để khôi phục mọi tài khoản marketing — không bao giờ xóa.",
   },
   {
     id: "a8",
@@ -92,6 +124,10 @@ export const accounts: MarketingAccount[] = [
     description: "Workspace chứa toàn bộ template thương hiệu.",
     handoverNote: "Mời thành viên mới qua email, gán quyền Brand Designer.",
     lastUpdated: "2026-04-08",
+    loginUrl: "https://canva.com",
+    username: "design@dlioro-hotel.com",
+    password: "Canva@Dlioro2026",
+    guide: "Workspace 'D\\'lioro Brand'. Tất cả file phải đặt trong folder thương hiệu.",
   },
 ];
 
