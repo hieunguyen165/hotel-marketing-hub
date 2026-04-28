@@ -14,7 +14,7 @@ import {
 } from "recharts";
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
-  Globe, Megaphone, MessageCircle, LayoutGrid,
+  Globe, Megaphone, MessageCircle, LayoutGrid, Eye, Heart, Users, Mail,
 } from "lucide-react";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
@@ -90,11 +90,23 @@ const Reports = () => {
         />
       )}
       {current === "fanpage" && (
-        <ChannelView
-          channel="fanpage"
+        <FanpageView
           data={data}
           onAdd={(week, values) => {
-            setData((prev) => [...prev, { ...prev[prev.length - 1], week, fanpage: values as any }]);
+            setData((prev) => [
+              ...prev,
+              {
+                ...prev[prev.length - 1],
+                week,
+                fanpage: {
+                  ...values,
+                  // Map về aggregate cũ để Overview vẫn hoạt động
+                  reach: values.totalViews,
+                  followers: prev[prev.length - 1].fanpage.followers + values.newFollowers - values.unfollows,
+                  engagement: values.likes + values.comments + values.shares,
+                } as any,
+              },
+            ]);
             toast({ title: "Đã tạo báo cáo Fanpage", description: `Tuần ${week}` });
           }}
         />
@@ -245,16 +257,11 @@ function OverviewView({ data, last, prev }: { data: WeeklyReport[]; last: Weekly
 }
 
 /* ---------------- Channel View ---------------- */
-const channelFields: Record<"website" | "fanpage" | "ads", { key: string; label: string }[]> = {
+const channelFields: Record<"website" | "ads", { key: string; label: string }[]> = {
   website: [
     { key: "sessions", label: "Sessions" },
     { key: "bookings", label: "Đặt phòng" },
     { key: "conversion", label: "Conversion (%)" },
-  ],
-  fanpage: [
-    { key: "reach", label: "Reach" },
-    { key: "followers", label: "Followers" },
-    { key: "engagement", label: "Engagement" },
   ],
   ads: [
     { key: "spend", label: "Chi phí (VND)" },
@@ -268,7 +275,7 @@ function ChannelView({
   data,
   onAdd,
 }: {
-  channel: "website" | "fanpage" | "ads";
+  channel: "website" | "ads";
   data: WeeklyReport[];
   onAdd: (week: string, values: Record<string, number>) => void;
 }) {
@@ -449,3 +456,232 @@ function ChannelCard({ title, data }: { title: string; data: { label: string; va
 }
 
 export default Reports;
+
+/* ---------------- Fanpage View (grouped metrics) ---------------- */
+type FanpageValues = {
+  totalViews: number;
+  video3sViews: number;
+  videoUnder1minViews: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  newFollowers: number;
+  unfollows: number;
+  newMessages: number;
+  conversions: number;
+};
+
+const fanpageGroups: {
+  title: string;
+  icon: any;
+  color: string;
+  fields: { key: keyof FanpageValues; label: string; invert?: boolean }[];
+}[] = [
+  {
+    title: "Lượt Xem",
+    icon: Eye,
+    color: "from-sky-500 to-blue-600",
+    fields: [
+      { key: "totalViews", label: "Tổng Lượt Xem" },
+      { key: "video3sViews", label: "Lượt Xem Video 3s" },
+      { key: "videoUnder1minViews", label: "Lượt Xem Video Dưới 1 Phút" },
+    ],
+  },
+  {
+    title: "Tương Tác",
+    icon: Heart,
+    color: "from-pink-500 to-rose-500",
+    fields: [
+      { key: "likes", label: "Like" },
+      { key: "comments", label: "Bình Luận" },
+      { key: "shares", label: "Chia Sẻ" },
+    ],
+  },
+  {
+    title: "Đối Tượng",
+    icon: Users,
+    color: "from-violet-500 to-fuchsia-500",
+    fields: [
+      { key: "newFollowers", label: "Theo Dõi" },
+      { key: "unfollows", label: "Bỏ Theo Dõi", invert: true },
+    ],
+  },
+  {
+    title: "Tin Nhắn",
+    icon: Mail,
+    color: "from-emerald-500 to-teal-500",
+    fields: [
+      { key: "newMessages", label: "Tin Nhắn Mới" },
+      { key: "conversions", label: "Số Lượng Chuyển Đổi" },
+    ],
+  },
+];
+
+function FanpageView({
+  data,
+  onAdd,
+}: {
+  data: WeeklyReport[];
+  onAdd: (week: string, values: FanpageValues) => void;
+}) {
+  const last = data[data.length - 1];
+  const prev = data[data.length - 2];
+  const meta = channelMeta.fanpage;
+  const Icon = meta.icon;
+
+  const allFields = fanpageGroups.flatMap((g) => g.fields);
+  const [week, setWeek] = useState(`T${parseInt(last.week.replace("T", "")) + 1}`);
+  const [values, setValues] = useState<Record<string, string>>(
+    Object.fromEntries(allFields.map((f) => [f.key, ""]))
+  );
+
+  const submit = () => {
+    if (!week.trim()) return;
+    const numeric = {} as FanpageValues;
+    for (const f of allFields) (numeric as any)[f.key] = Number(values[f.key]) || 0;
+    onAdd(week.trim(), numeric);
+    setValues(Object.fromEntries(allFields.map((f) => [f.key, ""])));
+    setWeek(`T${parseInt(week.replace("T", "")) + 1}`);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Hero */}
+      <Card className={`border-0 p-6 text-white shadow-elegant md:p-7 bg-gradient-to-br ${meta.color}`}>
+        <div className="flex items-center gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20">
+            <Icon className="h-6 w-6" />
+          </span>
+          <div>
+            <Badge className="mb-1 bg-white/20 text-white hover:bg-white/20">Kênh Fanpage</Badge>
+            <h2 className="font-display text-2xl font-bold">Báo cáo Fanpage — Tuần {last.week}</h2>
+          </div>
+        </div>
+      </Card>
+
+      {/* Grouped KPI sections */}
+      {fanpageGroups.map((group) => {
+        const GIcon = group.icon;
+        return (
+          <div key={group.title} className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${group.color} text-white shadow-card-soft`}>
+                <GIcon className="h-4 w-4" />
+              </span>
+              <h3 className="font-display text-lg font-semibold">{group.title}</h3>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {group.fields.map((f) => {
+                const now = (last.fanpage as any)[f.key] as number;
+                const before = (prev.fanpage as any)[f.key] as number;
+                const delta = pct(now, before);
+                const positive = f.invert ? delta < 0 : delta > 0;
+                return (
+                  <Card key={f.key} className="p-5 shadow-card-soft">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{f.label}</p>
+                    <p className="mt-2 font-display text-3xl font-bold">{(now ?? 0).toLocaleString("vi-VN")}</p>
+                    <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${positive ? "text-success" : "text-destructive"}`}>
+                      {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {fmt(delta)} so với tuần trước
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Trend chart - tổng lượt xem & tương tác */}
+      <Card className="p-5 shadow-card-soft">
+        <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng Lượt Xem & Tương Tác</h3>
+        <ResponsiveContainer width="100%" height={280}>
+          <LineChart data={data.map((d) => ({
+            week: d.week,
+            totalViews: d.fanpage.totalViews,
+            engagement: (d.fanpage.likes ?? 0) + (d.fanpage.comments ?? 0) + (d.fanpage.shares ?? 0),
+          }))}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
+            <Line type="monotone" dataKey="totalViews" name="Tổng Lượt Xem" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="engagement" name="Tương Tác" stroke="hsl(var(--accent))" strokeWidth={2.5} dot={{ r: 3 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      </Card>
+
+      {/* Weekly history */}
+      <Card className="p-5 shadow-card-soft">
+        <h3 className="mb-4 font-display text-lg font-semibold">Lịch sử báo cáo tuần</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
+                <th className="py-2 pr-4">Tuần</th>
+                {allFields.map((f) => <th key={f.key} className="py-2 pr-4 whitespace-nowrap">{f.label}</th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {[...data].reverse().map((d) => (
+                <tr key={d.week} className="border-b border-border/60">
+                  <td className="py-2 pr-4 font-medium">{d.week}</td>
+                  {allFields.map((f) => (
+                    <td key={f.key} className="py-2 pr-4 text-muted-foreground">
+                      {(((d.fanpage as any)[f.key] as number) ?? 0).toLocaleString("vi-VN")}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {/* Add weekly report - grouped form */}
+      <Card className="p-5 shadow-card-soft">
+        <div className="mb-4 flex items-center gap-2">
+          <Plus className="h-5 w-5 text-primary" />
+          <h3 className="font-display text-lg font-semibold">Tạo báo cáo tuần mới — Fanpage</h3>
+        </div>
+        <div className="mb-5 max-w-xs">
+          <Label>Tuần</Label>
+          <Input value={week} onChange={(e) => setWeek(e.target.value)} placeholder="VD: T18" />
+        </div>
+        <div className="space-y-5">
+          {fanpageGroups.map((group) => {
+            const GIcon = group.icon;
+            return (
+              <div key={group.title}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className={`flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br ${group.color} text-white`}>
+                    <GIcon className="h-3.5 w-3.5" />
+                  </span>
+                  <h4 className="font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground">{group.title}</h4>
+                </div>
+                <div className="grid gap-3 md:grid-cols-3">
+                  {group.fields.map((f) => (
+                    <div key={f.key}>
+                      <Label>{f.label}</Label>
+                      <Input
+                        type="number"
+                        value={values[f.key]}
+                        onChange={(e) => setValues({ ...values, [f.key]: e.target.value })}
+                        placeholder="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-6 flex justify-end">
+          <Button onClick={submit} className="bg-gradient-brand text-primary-foreground shadow-elegant">
+            <Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
