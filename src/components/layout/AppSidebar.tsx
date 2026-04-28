@@ -5,7 +5,7 @@ import {
   FolderOpen,
   LineChart,
   CheckSquare,
-  Hotel,
+  Sparkles,
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,11 +22,11 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Tổng quan", url: "/", icon: LayoutDashboard, group: "Điều hành" },
-  { title: "Tài khoản & mật khẩu", url: "/accounts", icon: KeyRound, group: "Tài sản số" },
-  { title: "Kho tài nguyên", url: "/resources", icon: FolderOpen, group: "Tài sản số" },
-  { title: "Báo cáo marketing", url: "/reports", icon: LineChart, group: "Vận hành" },
-  { title: "Checklist công việc", url: "/checklist", icon: CheckSquare, group: "Vận hành" },
+  { title: "Tổng quan",            url: "/",          icon: LayoutDashboard, group: "Điều hành",  color: "from-violet-500 to-fuchsia-500" },
+  { title: "Tài khoản & mật khẩu", url: "/accounts",  icon: KeyRound,        group: "Tài sản số", color: "from-amber-500 to-orange-500" },
+  { title: "Kho tài nguyên",       url: "/resources", icon: FolderOpen,      group: "Tài sản số", color: "from-sky-500 to-blue-600" },
+  { title: "Báo cáo marketing",    url: "/reports",   icon: LineChart,       group: "Vận hành",   color: "from-emerald-500 to-teal-500" },
+  { title: "Checklist công việc",  url: "/checklist", icon: CheckSquare,     group: "Vận hành",   color: "from-pink-500 to-rose-500" },
 ];
 
 const groups = ["Điều hành", "Tài sản số", "Vận hành"] as const;
@@ -40,17 +40,16 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-gold shadow-gold">
-            <span className="font-display text-base font-bold text-primary-foreground">D</span>
-            <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-accent ring-2 ring-sidebar" />
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-brand shadow-gold">
+            <Sparkles className="h-5 w-5 text-white" strokeWidth={2.4} />
           </div>
           {!collapsed && (
             <div className="flex flex-col leading-tight">
-              <span className="font-display text-base font-semibold tracking-tight text-sidebar-foreground">
-                D'lioro<span className="text-sidebar-primary">.</span>
+              <span className="font-display text-base font-bold tracking-tight text-sidebar-foreground">
+                D'lioro<span className="text-gradient-brand">Hub</span>
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/50">
-                Marketing · Hub
+              <span className="text-[11px] text-sidebar-foreground/60">
+                Marketing Center
               </span>
             </div>
           )}
@@ -61,7 +60,7 @@ export function AppSidebar() {
         {groups.map((g) => (
           <SidebarGroup key={g}>
             {!collapsed && (
-              <SidebarGroupLabel className="font-mono text-[10px] uppercase tracking-[0.22em] text-sidebar-foreground/40">
+              <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/45">
                 {g}
               </SidebarGroupLabel>
             )}
@@ -75,16 +74,15 @@ export function AppSidebar() {
                         <NavLink
                           to={item.url}
                           end
-                          className={`group/item relative flex items-center gap-3 rounded-md transition-smooth ${
+                          className={`group/item relative flex items-center gap-3 rounded-xl px-2 py-2 transition-smooth ${
                             active
-                              ? "bg-sidebar-accent text-sidebar-primary font-medium shadow-[inset_0_1px_0_hsl(40_20%_90%/0.04)]"
-                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                              : "text-sidebar-foreground/80 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                           }`}
                         >
-                          {active && (
-                            <span className="absolute left-0 top-1/2 h-6 w-[3px] -translate-y-1/2 rounded-r bg-sidebar-primary shadow-[0_0_12px_hsl(38_80%_55%/0.6)]" />
-                          )}
-                          <item.icon className="h-4 w-4 shrink-0" />
+                          <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${item.color} text-white shadow-sm`}>
+                            <item.icon className="h-4 w-4" strokeWidth={2.2} />
+                          </span>
                           {!collapsed && <span className="text-sm">{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
@@ -100,11 +98,11 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border">
         {!collapsed && (
           <div className="px-2 py-2">
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-sidebar-foreground/40">
+            <div className="flex items-center justify-between text-[11px] text-sidebar-foreground/50">
               <span>v1.0.0</span>
               <span className="flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                online
+                Online
               </span>
             </div>
           </div>
