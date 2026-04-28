@@ -253,9 +253,9 @@ function ConsolidatedFunnel({ last }: { last: FanpageAggRow }) {
         <Sparkles className="h-4 w-4 text-primary" />
         <h3 className="font-display text-base font-semibold">Funnel tổng hợp: View → Chuyển đổi</h3>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1.2fr_1fr]">
-        <div>
-          <ResponsiveContainer width="100%" height={260}>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="mx-auto w-full max-w-[420px]">
+          <ResponsiveContainer width="100%" height={240}>
             <FunnelChart>
               <Tooltip />
               <Funnel dataKey="value" data={steps} isAnimationActive>
@@ -300,7 +300,7 @@ function ConsolidatedFunnel({ last }: { last: FanpageAggRow }) {
 /* ===== Insight + Warning panel ===== */
 function InsightWarningPanel({ insights, warnings }: { insights: string[]; warnings: { text: string }[] }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid h-full gap-4 sm:grid-cols-2 xl:grid-cols-1">
       <Card className="border-l-4 border-l-primary p-5 shadow-card-soft">
         <div className="mb-3 flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
@@ -385,8 +385,14 @@ export function FanpageDecisionDashboard({
   return (
     <div className="space-y-6">
       <KPISummary last={last} prev={prev} periodLabel={periodLabel} />
-      <InsightWarningPanel insights={insights} warnings={warnings} />
-      <ConsolidatedFunnel last={last} />
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-7">
+          <ConsolidatedFunnel last={last} />
+        </div>
+        <div className="xl:col-span-5">
+          <InsightWarningPanel insights={insights} warnings={warnings} />
+        </div>
+      </div>
       {/* Khuyến nghị sẽ render sau biểu đồ chi tiết, ở component cha */}
       <RecommendationsHidden recs={recs} />
     </div>
