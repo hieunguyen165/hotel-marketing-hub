@@ -153,16 +153,35 @@ export const resources: Resource[] = [
 export interface WeeklyReport {
   week: string; // ISO week label
   website: { sessions: number; bookings: number; conversion: number };
-  fanpage: { reach: number; followers: number; engagement: number };
+  fanpage: {
+    // Lượt Xem
+    totalViews: number;
+    video3sViews: number;
+    videoUnder1minViews: number;
+    // Tương Tác
+    likes: number;
+    comments: number;
+    shares: number;
+    // Đối Tượng
+    newFollowers: number;
+    unfollows: number;
+    // Tin Nhắn
+    newMessages: number;
+    conversions: number;
+    // Legacy aggregates (giữ tương thích Overview)
+    reach: number;
+    followers: number;
+    engagement: number;
+  };
   ads: { spend: number; bookings: number; cpa: number };
 }
 
 export const weeklyReports: WeeklyReport[] = [
-  { week: "T13", website: { sessions: 3200, bookings: 28, conversion: 0.87 }, fanpage: { reach: 42000, followers: 27800, engagement: 1850 }, ads: { spend: 12000000, bookings: 18, cpa: 666000 } },
-  { week: "T14", website: { sessions: 3680, bookings: 34, conversion: 0.92 }, fanpage: { reach: 51000, followers: 27950, engagement: 2210 }, ads: { spend: 13500000, bookings: 22, cpa: 613000 } },
-  { week: "T15", website: { sessions: 4100, bookings: 41, conversion: 1.0 }, fanpage: { reach: 58000, followers: 28120, engagement: 2480 }, ads: { spend: 14200000, bookings: 26, cpa: 546000 } },
-  { week: "T16", website: { sessions: 4520, bookings: 47, conversion: 1.04 }, fanpage: { reach: 63500, followers: 28310, engagement: 2720 }, ads: { spend: 15000000, bookings: 31, cpa: 483000 } },
-  { week: "T17", website: { sessions: 4980, bookings: 53, conversion: 1.06 }, fanpage: { reach: 71000, followers: 28540, engagement: 3120 }, ads: { spend: 15800000, bookings: 36, cpa: 438000 } },
+  { week: "T13", website: { sessions: 3200, bookings: 28, conversion: 0.87 }, fanpage: { totalViews: 42000, video3sViews: 18500, videoUnder1minViews: 6200, likes: 1320, comments: 320, shares: 210, newFollowers: 180, unfollows: 30, newMessages: 145, conversions: 22, reach: 42000, followers: 27800, engagement: 1850 }, ads: { spend: 12000000, bookings: 18, cpa: 666000 } },
+  { week: "T14", website: { sessions: 3680, bookings: 34, conversion: 0.92 }, fanpage: { totalViews: 51000, video3sViews: 22800, videoUnder1minViews: 7800, likes: 1580, comments: 410, shares: 260, newFollowers: 210, unfollows: 28, newMessages: 168, conversions: 27, reach: 51000, followers: 27950, engagement: 2210 }, ads: { spend: 13500000, bookings: 22, cpa: 613000 } },
+  { week: "T15", website: { sessions: 4100, bookings: 41, conversion: 1.0 }, fanpage: { totalViews: 58000, video3sViews: 26200, videoUnder1minViews: 9100, likes: 1780, comments: 470, shares: 295, newFollowers: 240, unfollows: 32, newMessages: 192, conversions: 33, reach: 58000, followers: 28120, engagement: 2480 }, ads: { spend: 14200000, bookings: 26, cpa: 546000 } },
+  { week: "T16", website: { sessions: 4520, bookings: 47, conversion: 1.04 }, fanpage: { totalViews: 63500, video3sViews: 29400, videoUnder1minViews: 10600, likes: 1960, comments: 520, shares: 330, newFollowers: 260, unfollows: 25, newMessages: 215, conversions: 38, reach: 63500, followers: 28310, engagement: 2720 }, ads: { spend: 15000000, bookings: 31, cpa: 483000 } },
+  { week: "T17", website: { sessions: 4980, bookings: 53, conversion: 1.06 }, fanpage: { totalViews: 71000, video3sViews: 33500, videoUnder1minViews: 12200, likes: 2230, comments: 590, shares: 380, newFollowers: 295, unfollows: 22, newMessages: 248, conversions: 45, reach: 71000, followers: 28540, engagement: 3120 }, ads: { spend: 15800000, bookings: 36, cpa: 438000 } },
 ];
 
 export interface ChecklistItem {
