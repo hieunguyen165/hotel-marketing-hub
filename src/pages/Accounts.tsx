@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -381,17 +381,14 @@ function FormDialog({
 }) {
   const [form, setForm] = useState<FormState>(emptyForm);
 
-  // Sync when initial/open changes
-  useState(() => {});
-  // we rely on key-change via JSX below
+  useEffect(() => {
+    if (open) setForm(initial ? { ...initial } : emptyForm);
+  }, [open, initial]);
 
   return (
     <Dialog
       open={open}
-      onOpenChange={(o) => {
-        onOpenChange(o);
-        if (o) setForm(initial ? { ...initial } : emptyForm);
-      }}
+      onOpenChange={onOpenChange}
     >
       <DialogContent className="max-w-2xl">
         <DialogHeader>
