@@ -797,87 +797,11 @@ function FanpageView({
         </div>
       </Card>
 
-      {/* Grouped KPI sections */}
-      {fanpageGroups.map((group) => {
-        const GIcon = group.icon;
-        return (
-          <div key={group.title} className="space-y-3">
-            <div className="flex items-center gap-2">
-              <span className={`flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br ${group.color} text-white shadow-card-soft`}>
-                <GIcon className="h-4 w-4" />
-              </span>
-              <h3 className="font-display text-lg font-semibold">{group.title}</h3>
-            </div>
-            <div className="grid gap-4 md:grid-cols-3">
-              {group.fields.map((f) => {
-                const now = (last.fanpage as any)[f.key] as number;
-                const before = (prev.fanpage as any)[f.key] as number;
-                const delta = pct(now, before);
-                const positive = f.invert ? delta < 0 : delta > 0;
-                return (
-                  <Card key={f.key} className="p-5 shadow-card-soft">
-                    <p className="text-xs uppercase tracking-wider text-muted-foreground">{f.label}</p>
-                    <p className="mt-2 font-display text-3xl font-bold">{(now ?? 0).toLocaleString("vi-VN")}</p>
-                    <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${positive ? "text-success" : "text-destructive"}`}>
-                      {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      {fmt(delta)} so với tuần trước
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      {/* Trend chart - tổng lượt xem & tương tác */}
-      {/* === DASHBOARD PHÂN TÍCH CHUYÊN SÂU === */}
+      {/* === BIỂU ĐỒ PHÂN TÍCH CHUYÊN SÂU (lên đầu, 3 cột) === */}
       <FanpageAnalytics data={data} last={last} prev={prev} />
 
-      <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng Lượt Xem & Tương Tác</h3>
-        <ResponsiveContainer width="100%" height={280}>
-          <LineChart data={data.map((d) => ({
-            week: d.week,
-            totalViews: d.fanpage.totalViews,
-            engagement: (d.fanpage.likes ?? 0) + (d.fanpage.comments ?? 0) + (d.fanpage.shares ?? 0),
-          }))}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-            <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-            <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8 }} />
-            <Line type="monotone" dataKey="totalViews" name="Tổng Lượt Xem" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} />
-            <Line type="monotone" dataKey="engagement" name="Tương Tác" stroke="hsl(var(--accent))" strokeWidth={2.5} dot={{ r: 3 }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </Card>
-
-      {/* Weekly history */}
-      <Card className="p-5 shadow-card-soft">
-        <h3 className="mb-4 font-display text-lg font-semibold">Lịch sử báo cáo tuần</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
-                <th className="py-2 pr-4">Tuần</th>
-                {allFields.map((f) => <th key={f.key} className="py-2 pr-4 whitespace-nowrap">{f.label}</th>)}
-              </tr>
-            </thead>
-            <tbody>
-              {[...data].reverse().map((d) => (
-                <tr key={d.week} className="border-b border-border/60">
-                  <td className="py-2 pr-4 font-medium">{d.week}</td>
-                  {allFields.map((f) => (
-                    <td key={f.key} className="py-2 pr-4 text-muted-foreground">
-                      {(((d.fanpage as any)[f.key] as number) ?? 0).toLocaleString("vi-VN")}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
+      <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
 
       {/* Add weekly report - grouped form */}
       <Card className="p-5 shadow-card-soft">
