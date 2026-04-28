@@ -301,7 +301,7 @@ function ConsolidatedFunnel({ last }: { last: FanpageAggRow }) {
 function InsightWarningPanel({ insights, warnings }: { insights: string[]; warnings: { text: string }[] }) {
   return (
     <div className="grid h-full gap-4 sm:grid-cols-2 xl:grid-cols-1">
-      <Card className="border-l-4 border-l-primary p-5 shadow-card-soft">
+      <Card className="p-5 shadow-card-soft">
         <div className="mb-3 flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
           <h3 className="font-display text-base font-semibold">Insight tự động</h3>
@@ -320,7 +320,7 @@ function InsightWarningPanel({ insights, warnings }: { insights: string[]; warni
           </ul>
         )}
       </Card>
-      <Card className="border-l-4 border-l-rose-500 p-5 shadow-card-soft">
+      <Card className="p-5 shadow-card-soft">
         <div className="mb-3 flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-rose-500" />
           <h3 className="font-display text-base font-semibold">Cảnh báo</h3>
