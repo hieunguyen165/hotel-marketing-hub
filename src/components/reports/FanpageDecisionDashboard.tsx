@@ -385,8 +385,14 @@ export function FanpageDecisionDashboard({
   return (
     <div className="space-y-6">
       <KPISummary last={last} prev={prev} periodLabel={periodLabel} />
-      <InsightWarningPanel insights={insights} warnings={warnings} />
-      <ConsolidatedFunnel last={last} />
+      <div className="grid gap-6 xl:grid-cols-12">
+        <div className="xl:col-span-7">
+          <ConsolidatedFunnel last={last} />
+        </div>
+        <div className="xl:col-span-5">
+          <InsightWarningPanel insights={insights} warnings={warnings} />
+        </div>
+      </div>
       {/* Khuyến nghị sẽ render sau biểu đồ chi tiết, ở component cha */}
       <RecommendationsHidden recs={recs} />
     </div>
