@@ -593,6 +593,9 @@ function FanpageView({
       })}
 
       {/* Trend chart - tổng lượt xem & tương tác */}
+      {/* === DASHBOARD PHÂN TÍCH CHUYÊN SÂU === */}
+      <FanpageAnalytics data={data} last={last} prev={prev} />
+
       <Card className="p-5 shadow-card-soft">
         <h3 className="mb-4 font-display text-lg font-semibold">Xu hướng Lượt Xem & Tương Tác</h3>
         <ResponsiveContainer width="100%" height={280}>
