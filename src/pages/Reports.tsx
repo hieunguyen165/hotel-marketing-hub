@@ -702,8 +702,13 @@ function FanpageAnalytics({
             <Mail className="h-4 w-4 text-emerald-500" />
             <h4 className="font-display text-sm font-semibold">Funnel Inbox → Đơn</h4>
           </div>
-          <p className="mb-3 text-[11px] text-muted-foreground">Inbox → chuyển đổi.</p>
-          <ResponsiveContainer width="100%" height={200}>
+          <p className="mb-3 text-[11px] text-muted-foreground">
+            Tỷ lệ chuyển đổi: <strong className="text-emerald-600">{convRate}%</strong>
+            <span className="ml-1 text-muted-foreground">
+              ({last.conversions.toLocaleString("vi-VN")}/{last.newMessages.toLocaleString("vi-VN")})
+            </span>
+          </p>
+          <ResponsiveContainer width="100%" height={180}>
             <FunnelChart>
               <Tooltip />
               <Funnel dataKey="value" data={msgFunnel} isAnimationActive>
@@ -712,6 +717,11 @@ function FanpageAnalytics({
               </Funnel>
             </FunnelChart>
           </ResponsiveContainer>
+          <div className="mt-2 flex items-center justify-center gap-1 rounded-md bg-emerald-50 px-2 py-1.5 text-[11px] dark:bg-emerald-950/30">
+            <span className="text-muted-foreground">Inbox → Đơn:</span>
+            <strong className="text-emerald-600">{convRate}%</strong>
+            <span className="text-muted-foreground">· rơi {(100 - convRate).toFixed(1)}%</span>
+          </div>
         </Card>
 
         <Card className="border-0 bg-gradient-brand p-5 text-primary-foreground shadow-elegant">
