@@ -6,6 +6,8 @@ import {
   LineChart,
   CheckSquare,
   Sparkles,
+  Users as UsersIcon,
+  LogOut,
 } from "lucide-react";
 import {
   Sidebar,
@@ -20,21 +22,30 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
 
-const items = [
+type Item = { title: string; url: string; icon: any; group: string; color: string; adminOnly?: boolean };
+
+const items: Item[] = [
   { title: "Tổng quan",            url: "/",          icon: LayoutDashboard, group: "Điều hành",  color: "from-violet-500 to-fuchsia-500" },
-  { title: "Tài khoản & mật khẩu", url: "/accounts",  icon: KeyRound,        group: "Tài sản số", color: "from-amber-500 to-orange-500" },
+  { title: "Tài khoản & mật khẩu", url: "/accounts",  icon: KeyRound,        group: "Tài sản số", color: "from-amber-500 to-orange-500", adminOnly: true },
   { title: "Kho tài nguyên",       url: "/resources", icon: FolderOpen,      group: "Tài sản số", color: "from-sky-500 to-blue-600" },
   { title: "Báo cáo marketing",    url: "/reports",   icon: LineChart,       group: "Vận hành",   color: "from-emerald-500 to-teal-500" },
   { title: "Checklist công việc",  url: "/checklist", icon: CheckSquare,     group: "Vận hành",   color: "from-pink-500 to-rose-500" },
+  { title: "Người dùng",           url: "/users",     icon: UsersIcon,       group: "Quản trị",   color: "from-red-500 to-rose-600", adminOnly: true },
 ];
 
-const groups = ["Điều hành", "Tài sản số", "Vận hành"] as const;
+const groups = ["Điều hành", "Tài sản số", "Vận hành", "Quản trị"] as const;
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { isAdmin, user, role, signOut } = useAuth();
+
+  const visibleItems = items.filter((i) => !i.adminOnly || isAdmin);
+  const visibleGroups = groups.filter((g) => visibleItems.some((i) => i.group === g));
 
   return (
     <Sidebar collapsible="icon" className="border-r border-sidebar-border bg-sidebar">
@@ -57,7 +68,7 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-1 py-3">
-        {groups.map((g) => (
+        {visibleGroups.map((g) => (
           <SidebarGroup key={g}>
             {!collapsed && (
               <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-[0.16em] text-sidebar-foreground/45">
@@ -66,7 +77,7 @@ export function AppSidebar() {
             )}
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.filter((i) => i.group === g).map((item) => {
+                {visibleItems.filter((i) => i.group === g).map((item) => {
                   const active = location.pathname === item.url;
                   return (
                     <SidebarMenuItem key={item.url}>
@@ -96,16 +107,31 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        {!collapsed && (
-          <div className="px-2 py-2">
-            <div className="flex items-center justify-between text-[11px] text-sidebar-foreground/50">
-              <span>v1.0.0</span>
-              <span className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                Online
-              </span>
-            </div>
+        {!collapsed ? (
+          <div className="px-2 py-2 space-y-2">
+            {user && (
+              <div className="rounded-lg bg-sidebar-accent/40 px-2.5 py-2">
+                <div className="truncate text-xs font-medium text-sidebar-foreground">
+                  {user.user_metadata?.full_name || user.email}
+                </div>
+                <div className="truncate text-[10px] text-sidebar-foreground/60">
+                  {role === "admin" ? "Quản trị viên" : role === "manager" ? "Quản lý" : "Thành viên"}
+                </div>
+              </div>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-sidebar-foreground/80 hover:text-sidebar-foreground"
+              onClick={() => signOut()}
+            >
+              <LogOut className="h-4 w-4" /> Đăng xuất
+            </Button>
           </div>
+        ) : (
+          <Button variant="ghost" size="icon" onClick={() => signOut()} title="Đăng xuất">
+            <LogOut className="h-4 w-4" />
+          </Button>
         )}
       </SidebarFooter>
     </Sidebar>

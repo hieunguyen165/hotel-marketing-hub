@@ -19,6 +19,7 @@ import {
 } from "@/lib/reportHistory";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* ---------- Helpers ---------- */
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n));
@@ -105,6 +106,7 @@ function InsightLine({ children }: { children: React.ReactNode }) {
 /* ---------- Panel ---------- */
 export function WebsiteReportPanel() {
   const { toast } = useToast();
+  const { canEdit } = useAuth();
   const [history, setHistory] = useState<StoredReport[]>(() => loadReports());
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [periodMode, setPeriodMode] = useState<PeriodMode>("week");
@@ -276,7 +278,7 @@ export function WebsiteReportPanel() {
             </Tabs>
           </div>
           <div className="flex gap-2">
-            {report && (
+            {report && canEdit && (
               <Button
                 variant="outline" size="sm" className="h-8 text-xs"
                 onClick={() => onDelete(report.id)}
@@ -284,24 +286,33 @@ export function WebsiteReportPanel() {
                 <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Xoá
               </Button>
             )}
-            <Button
-              size="sm"
-              onClick={() => setShowUpload((v) => !v)}
-              className="h-8 text-xs bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
-            >
-              <Upload className="mr-1.5 h-3.5 w-3.5" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
-            </Button>
+            {canEdit && (
+              <Button
+                size="sm"
+                onClick={() => setShowUpload((v) => !v)}
+                className="h-8 text-xs bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
+              >
+                <Upload className="mr-1.5 h-3.5 w-3.5" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
+              </Button>
+            )}
           </div>
         </div>
 
         {/* Upload area inline */}
-        {(showUpload || history.length === 0) && (
+        {canEdit && (showUpload || history.length === 0) && (
           <div className="mt-3">
             {loading ? (
               <Card className="p-6 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
             ) : (
               <UploadZone onFile={onFile} />
             )}
+          </div>
+        )}
+        {!canEdit && history.length === 0 && (
+          <div className="mt-3">
+            <Card className="p-6 text-center text-sm text-muted-foreground">
+              Chưa có báo cáo nào. Vui lòng liên hệ quản trị viên để tải báo cáo lên.
+            </Card>
           </div>
         )}
       </Card>
