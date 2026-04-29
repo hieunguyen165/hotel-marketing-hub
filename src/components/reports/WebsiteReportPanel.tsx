@@ -31,24 +31,24 @@ function KpiCard({
 }: { icon: any; label: string; value: string; delta?: number; hint?: string; gradient: string }) {
   const positive = (delta ?? 0) >= 0;
   return (
-    <Card className="relative overflow-hidden border-0 bg-card p-5 shadow-card-soft">
-      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-2xl`} />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">{value}</p>
-          {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+    <Card className="relative overflow-hidden border-0 bg-card p-3 shadow-card-soft">
+      <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-2xl`} />
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="mt-1 font-display text-xl font-bold tracking-tight">{value}</p>
+          {hint && <p className="mt-0.5 text-[10px] text-muted-foreground">{hint}</p>}
         </div>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm`}>
-          <Icon className="h-5 w-5" />
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-white shadow-sm`}>
+          <Icon className="h-4 w-4" />
         </span>
       </div>
       {typeof delta === "number" && (
-        <div className={`relative mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+        <div className={`relative mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
           positive ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
         }`}>
           {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          {Math.abs(delta).toFixed(1)}% vs tuần trước
+          {Math.abs(delta).toFixed(1)}% vs trước
         </div>
       )}
     </Card>
