@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { AppLayout } from "@/components/layout/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -97,8 +96,8 @@ function InsightLine({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ---------- Page ---------- */
-const WebsiteReports = () => {
+/* ---------- Panel ---------- */
+export function WebsiteReportPanel() {
   const { toast } = useToast();
   const [report, setReport] = useState<GA4Report | null>(null);
   const [loading, setLoading] = useState(false);
@@ -195,17 +194,7 @@ const WebsiteReports = () => {
 
   /* -------- UI -------- */
   return (
-    <AppLayout
-      title="Báo cáo Website"
-      subtitle={report ? `${report.account} • ${report.property} • ${report.startDate} → ${report.endDate}` : "Phân tích Analytics theo tuần"}
-      actions={
-        report && (
-          <Button variant="outline" size="sm" onClick={() => setReport(null)}>
-            <Trash2 className="mr-2 h-4 w-4" /> Tải file mới
-          </Button>
-        )
-      }
-    >
+    <div>
       {!report ? (
         <div className="mx-auto max-w-3xl">
           {loading ? (
@@ -224,6 +213,17 @@ const WebsiteReports = () => {
         </div>
       ) : (
         <div className="space-y-6">
+          {/* Header info + reset */}
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
+            <div className="text-sm">
+              <p className="font-semibold text-foreground">{report.account} • {report.property}</p>
+              <p className="text-xs text-muted-foreground">Kỳ báo cáo: {report.startDate} → {report.endDate}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setReport(null)}>
+              <Trash2 className="mr-2 h-4 w-4" /> Tải file mới
+            </Button>
+          </div>
+
           {/* === KPI === */}
           <section>
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -496,8 +496,8 @@ const WebsiteReports = () => {
           </section>
         </div>
       )}
-    </AppLayout>
+    </div>
   );
-};
+}
 
-export default WebsiteReports;
+export default WebsiteReportPanel;
