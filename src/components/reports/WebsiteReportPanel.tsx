@@ -230,35 +230,124 @@ export function WebsiteReportPanel() {
   }, [report, problemPages]);
 
   /* -------- UI -------- */
+  const periodLabel = periodMode === "week" ? "tuần" : periodMode === "month" ? "tháng" : "năm";
+
   return (
-    <div>
-      {!report ? (
-        <div className="mx-auto max-w-3xl">
-          {loading ? (
-            <Card className="p-12 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
-          ) : (
-            <UploadZone onFile={onFile} />
-          )}
-          <Card className="mt-6 bg-card p-5">
-            <h4 className="flex items-center gap-2 text-sm font-semibold"><Lightbulb className="h-4 w-4 text-amber-500" /> Hướng dẫn nhanh</h4>
-            <ol className="mt-2 space-y-1 text-xs text-muted-foreground">
-              <li>1. Mở Google Analytics 4 → "Tổng quan" → biểu tượng chia sẻ → Tải xuống file Excel.</li>
-              <li>2. Kéo thả hoặc chọn file vào khung phía trên.</li>
-              <li>3. Hệ thống sẽ tự làm sạch, chia tuần, tạo dashboard và đề xuất hành động.</li>
-            </ol>
-          </Card>
+    <div className="space-y-6">
+      {/* === Toolbar: lịch sử + filter Tuần/Tháng/Năm + upload === */}
+      <Card className="bg-card p-4 shadow-card-soft">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-violet-500" />
+              <span className="font-semibold">{history.length}</span>
+              <span className="text-muted-foreground">báo cáo đã lưu</span>
+            </div>
+            {history.length > 0 && (
+              <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v)}>
+                <SelectTrigger className="h-9 w-[260px]">
+                  <SelectValue placeholder="Chọn kỳ báo cáo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[...history].reverse().map((r) => {
+                    const p = periodOf(r, periodMode);
+                    return (
+                      <SelectItem key={r.id} value={r.id}>
+                        {p.label} • {r.startDate} → {r.endDate}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
+            <Tabs value={periodMode} onValueChange={(v) => setPeriodMode(v as PeriodMode)}>
+              <TabsList>
+                <TabsTrigger value="week">Tuần</TabsTrigger>
+                <TabsTrigger value="month">Tháng</TabsTrigger>
+                <TabsTrigger value="year">Năm</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="flex gap-2">
+            {report && (
+              <Button
+                variant="outline" size="sm"
+                onClick={() => onDelete(report.id)}
+                className="text-rose-600 hover:text-rose-700"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Xoá kỳ này
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => setShowUpload((v) => !v)}
+              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
+            >
+              <Upload className="mr-2 h-4 w-4" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
+            </Button>
+          </div>
         </div>
+
+        {/* Upload area inline */}
+        {(showUpload || history.length === 0) && (
+          <div className="mt-4">
+            {loading ? (
+              <Card className="p-10 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
+            ) : (
+              <UploadZone onFile={onFile} />
+            )}
+          </div>
+        )}
+      </Card>
+
+      {/* === Biểu đồ xu hướng nhiều kỳ === */}
+      {history.length >= 1 && (
+        <Card className="bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="flex items-center gap-2 font-display text-base font-bold">
+                <History className="h-4 w-4 text-violet-500" /> Xu hướng theo {periodLabel}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Tổng hợp các kỳ đã lưu — {periodSeries.length} {periodLabel}
+                {prevP && lastP && ` • ${periodLabel} hiện tại ${pct(lastP.views, prevP.views) >= 0 ? "tăng" : "giảm"} ${Math.abs(pct(lastP.views, prevP.views)).toFixed(1)}% lượt xem`}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer>
+              <ComposedChart data={periodSeries}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="label" className="text-xs" />
+                <YAxis yAxisId="l" className="text-xs" />
+                <YAxis yAxisId="r" orientation="right" className="text-xs" />
+                <Tooltip />
+                <Legend />
+                <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[6, 6, 0, 0]} />
+                <Line yAxisId="r" type="monotone" dataKey="users" name="Người dùng" stroke="hsl(330 80% 55%)" strokeWidth={2.5} />
+                <Line yAxisId="r" type="monotone" dataKey="newUsers" name="User mới" stroke="hsl(160 70% 45%)" strokeWidth={2} strokeDasharray="4 4" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {!report ? (
+        <Card className="p-10 text-center text-sm text-muted-foreground">
+          Chưa có báo cáo nào — hãy tải file Analytics tuần đầu tiên lên.
+        </Card>
       ) : (
         <div className="space-y-6">
-          {/* Header info + reset */}
+          {/* Header thông tin kỳ đang xem */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
-            <div className="text-sm">
-              <p className="font-semibold text-foreground">{report.account} • {report.property}</p>
-              <p className="text-xs text-muted-foreground">Kỳ báo cáo: {report.startDate} → {report.endDate}</p>
+            <div className="flex items-center gap-3 text-sm">
+              <Calendar className="h-4 w-4 text-violet-500" />
+              <div>
+                <p className="font-semibold text-foreground">{periodOf(report, periodMode).label}</p>
+                <p className="text-xs text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
+              </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setReport(null)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Tải file mới
-            </Button>
+            <Badge variant="secondary" className="text-xs">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
           </div>
 
           {/* === KPI === */}
