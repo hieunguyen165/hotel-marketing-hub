@@ -6,7 +6,6 @@ import {
   LineChart,
   CheckSquare,
   Sparkles,
-  Globe,
 } from "lucide-react";
 import {
   Sidebar,
@@ -27,7 +26,6 @@ const items = [
   { title: "Tài khoản & mật khẩu", url: "/accounts",  icon: KeyRound,        group: "Tài sản số", color: "from-amber-500 to-orange-500" },
   { title: "Kho tài nguyên",       url: "/resources", icon: FolderOpen,      group: "Tài sản số", color: "from-sky-500 to-blue-600" },
   { title: "Báo cáo marketing",    url: "/reports",   icon: LineChart,       group: "Vận hành",   color: "from-emerald-500 to-teal-500" },
-  { title: "Báo cáo Website",      url: "/website-reports", icon: Globe,    group: "Vận hành",   color: "from-violet-500 to-fuchsia-500" },
   { title: "Checklist công việc",  url: "/checklist", icon: CheckSquare,     group: "Vận hành",   color: "from-pink-500 to-rose-500" },
 ];
 

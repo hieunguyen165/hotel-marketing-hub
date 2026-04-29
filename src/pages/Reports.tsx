@@ -19,6 +19,7 @@ import {
 import { Filter } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FanpageDecisionDashboard, FanpageRecommendations } from "@/components/reports/FanpageDecisionDashboard";
+import { WebsiteReportPanel } from "@/components/reports/WebsiteReportPanel";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
 
@@ -82,16 +83,7 @@ const Reports = () => {
       </div>
 
       {current === "overview" && <OverviewView data={data} last={last} prev={prev} />}
-      {current === "website" && (
-        <ChannelView
-          channel="website"
-          data={data}
-          onAdd={(week, values) => {
-            setData((prev) => [...prev, { ...prev[prev.length - 1], week, website: values as any }]);
-            toast({ title: "Đã tạo báo cáo Website", description: `Tuần ${week}` });
-          }}
-        />
-      )}
+      {current === "website" && <WebsiteReportPanel />}
       {current === "fanpage" && (
         <FanpageView
           data={data}
