@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,13 +6,19 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Upload, FileSpreadsheet, TrendingUp, TrendingDown, Eye, Users, Activity,
   MousePointerClick, Lightbulb, AlertTriangle, CheckCircle2, Sparkles, Clock,
-  Trash2, ArrowRight,
+  Trash2, ArrowRight, Calendar, History, Database,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ComposedChart, Area, ScatterChart, Scatter, ZAxis, Cell,
 } from "recharts";
 import { GA4Report, parseGA4Workbook, buildWeeklySeries, pct, formatDuration } from "@/lib/ga4Parser";
+import {
+  StoredReport, PeriodMode, loadReports, upsertReport, deleteReport,
+  aggregateByPeriod, periodOf,
+} from "@/lib/reportHistory";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /* ---------- Helpers ---------- */
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n));
