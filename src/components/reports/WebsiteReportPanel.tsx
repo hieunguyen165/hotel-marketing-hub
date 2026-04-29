@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,13 +6,19 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Upload, FileSpreadsheet, TrendingUp, TrendingDown, Eye, Users, Activity,
   MousePointerClick, Lightbulb, AlertTriangle, CheckCircle2, Sparkles, Clock,
-  Trash2, ArrowRight,
+  Trash2, ArrowRight, Calendar, History, Database,
 } from "lucide-react";
 import {
   ResponsiveContainer, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ComposedChart, Area, ScatterChart, Scatter, ZAxis, Cell,
 } from "recharts";
 import { GA4Report, parseGA4Workbook, buildWeeklySeries, pct, formatDuration } from "@/lib/ga4Parser";
+import {
+  StoredReport, PeriodMode, loadReports, upsertReport, deleteReport,
+  aggregateByPeriod, periodOf,
+} from "@/lib/reportHistory";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /* ---------- Helpers ---------- */
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n));
@@ -99,14 +105,33 @@ function InsightLine({ children }: { children: React.ReactNode }) {
 /* ---------- Panel ---------- */
 export function WebsiteReportPanel() {
   const { toast } = useToast();
-  const [report, setReport] = useState<GA4Report | null>(null);
+  const [history, setHistory] = useState<StoredReport[]>(() => loadReports());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("week");
+  const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Auto-select latest report on first load
+  useEffect(() => {
+    if (!selectedId && history.length > 0) {
+      setSelectedId(history[history.length - 1].id);
+    }
+  }, [history, selectedId]);
+
+  const report = useMemo(
+    () => history.find((r) => r.id === selectedId) ?? null,
+    [history, selectedId],
+  );
 
   const onFile = useCallback(async (file: File) => {
     try {
       setLoading(true);
       const r = await parseGA4Workbook(file);
-      setReport(r);
+      const list = upsertReport(r);
+      setHistory(list);
+      const saved = list.find((x) => x.startDate === r.startDate && x.endDate === r.endDate);
+      if (saved) setSelectedId(saved.id);
+      setShowUpload(false);
       toast({ title: "Đã đọc file thành công", description: `${r.pages.length} trang • Kỳ ${r.startDate} → ${r.endDate}` });
     } catch (e: any) {
       toast({ title: "Không đọc được file", description: e?.message ?? "Vui lòng kiểm tra định dạng.", variant: "destructive" });
@@ -114,6 +139,25 @@ export function WebsiteReportPanel() {
       setLoading(false);
     }
   }, [toast]);
+
+  const onDelete = useCallback((id: string) => {
+    const list = deleteReport(id);
+    setHistory(list);
+    if (selectedId === id) setSelectedId(list[list.length - 1]?.id ?? null);
+    toast({ title: "Đã xoá báo cáo" });
+  }, [selectedId, toast]);
+
+  /* -------- Period series across stored reports -------- */
+  const periodSeries = useMemo(() => aggregateByPeriod(history, periodMode), [history, periodMode]);
+  const lastP = periodSeries[periodSeries.length - 1];
+  const prevP = periodSeries[periodSeries.length - 2];
+
+  /** Báo cáo của kỳ liền trước trong history (để so sánh KPI thực giữa 2 kỳ đã upload). */
+  const prevReport = useMemo(() => {
+    if (!report) return null;
+    const idx = history.findIndex((r) => r.id === report.id);
+    return idx > 0 ? history[idx - 1] : null;
+  }, [history, report]);
 
   const weekly = useMemo(() => (report ? buildWeeklySeries(report) : []), [report]);
   const lastW = weekly[weekly.length - 1];
@@ -193,35 +237,124 @@ export function WebsiteReportPanel() {
   }, [report, problemPages]);
 
   /* -------- UI -------- */
+  const periodLabel = periodMode === "week" ? "tuần" : periodMode === "month" ? "tháng" : "năm";
+
   return (
-    <div>
-      {!report ? (
-        <div className="mx-auto max-w-3xl">
-          {loading ? (
-            <Card className="p-12 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
-          ) : (
-            <UploadZone onFile={onFile} />
-          )}
-          <Card className="mt-6 bg-card p-5">
-            <h4 className="flex items-center gap-2 text-sm font-semibold"><Lightbulb className="h-4 w-4 text-amber-500" /> Hướng dẫn nhanh</h4>
-            <ol className="mt-2 space-y-1 text-xs text-muted-foreground">
-              <li>1. Mở Google Analytics 4 → "Tổng quan" → biểu tượng chia sẻ → Tải xuống file Excel.</li>
-              <li>2. Kéo thả hoặc chọn file vào khung phía trên.</li>
-              <li>3. Hệ thống sẽ tự làm sạch, chia tuần, tạo dashboard và đề xuất hành động.</li>
-            </ol>
-          </Card>
+    <div className="space-y-6">
+      {/* === Toolbar: lịch sử + filter Tuần/Tháng/Năm + upload === */}
+      <Card className="bg-card p-4 shadow-card-soft">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-violet-500" />
+              <span className="font-semibold">{history.length}</span>
+              <span className="text-muted-foreground">báo cáo đã lưu</span>
+            </div>
+            {history.length > 0 && (
+              <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v)}>
+                <SelectTrigger className="h-9 w-[260px]">
+                  <SelectValue placeholder="Chọn kỳ báo cáo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[...history].reverse().map((r) => {
+                    const p = periodOf(r, periodMode);
+                    return (
+                      <SelectItem key={r.id} value={r.id}>
+                        {p.label} • {r.startDate} → {r.endDate}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            )}
+            <Tabs value={periodMode} onValueChange={(v) => setPeriodMode(v as PeriodMode)}>
+              <TabsList>
+                <TabsTrigger value="week">Tuần</TabsTrigger>
+                <TabsTrigger value="month">Tháng</TabsTrigger>
+                <TabsTrigger value="year">Năm</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+          <div className="flex gap-2">
+            {report && (
+              <Button
+                variant="outline" size="sm"
+                onClick={() => onDelete(report.id)}
+                className="text-rose-600 hover:text-rose-700"
+              >
+                <Trash2 className="mr-2 h-4 w-4" /> Xoá kỳ này
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => setShowUpload((v) => !v)}
+              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
+            >
+              <Upload className="mr-2 h-4 w-4" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
+            </Button>
+          </div>
         </div>
+
+        {/* Upload area inline */}
+        {(showUpload || history.length === 0) && (
+          <div className="mt-4">
+            {loading ? (
+              <Card className="p-10 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
+            ) : (
+              <UploadZone onFile={onFile} />
+            )}
+          </div>
+        )}
+      </Card>
+
+      {/* === Biểu đồ xu hướng nhiều kỳ === */}
+      {history.length >= 1 && (
+        <Card className="bg-card p-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="flex items-center gap-2 font-display text-base font-bold">
+                <History className="h-4 w-4 text-violet-500" /> Xu hướng theo {periodLabel}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Tổng hợp các kỳ đã lưu — {periodSeries.length} {periodLabel}
+                {prevP && lastP && ` • ${periodLabel} hiện tại ${pct(lastP.views, prevP.views) >= 0 ? "tăng" : "giảm"} ${Math.abs(pct(lastP.views, prevP.views)).toFixed(1)}% lượt xem`}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 h-64">
+            <ResponsiveContainer>
+              <ComposedChart data={periodSeries}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
+                <XAxis dataKey="label" className="text-xs" />
+                <YAxis yAxisId="l" className="text-xs" />
+                <YAxis yAxisId="r" orientation="right" className="text-xs" />
+                <Tooltip />
+                <Legend />
+                <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[6, 6, 0, 0]} />
+                <Line yAxisId="r" type="monotone" dataKey="users" name="Người dùng" stroke="hsl(330 80% 55%)" strokeWidth={2.5} />
+                <Line yAxisId="r" type="monotone" dataKey="newUsers" name="User mới" stroke="hsl(160 70% 45%)" strokeWidth={2} strokeDasharray="4 4" />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      )}
+
+      {!report ? (
+        <Card className="p-10 text-center text-sm text-muted-foreground">
+          Chưa có báo cáo nào — hãy tải file Analytics tuần đầu tiên lên.
+        </Card>
       ) : (
         <div className="space-y-6">
-          {/* Header info + reset */}
+          {/* Header thông tin kỳ đang xem */}
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
-            <div className="text-sm">
-              <p className="font-semibold text-foreground">{report.account} • {report.property}</p>
-              <p className="text-xs text-muted-foreground">Kỳ báo cáo: {report.startDate} → {report.endDate}</p>
+            <div className="flex items-center gap-3 text-sm">
+              <Calendar className="h-4 w-4 text-violet-500" />
+              <div>
+                <p className="font-semibold text-foreground">{periodOf(report, periodMode).label}</p>
+                <p className="text-xs text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
+              </div>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setReport(null)}>
-              <Trash2 className="mr-2 h-4 w-4" /> Tải file mới
-            </Button>
+            <Badge variant="secondary" className="text-xs">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
           </div>
 
           {/* === KPI === */}
@@ -230,20 +363,20 @@ export function WebsiteReportPanel() {
               <KpiCard
                 icon={Eye} label="Tổng lượt xem"
                 value={fmt(report.kpi.totalViews)}
-                delta={lastW && prevW ? pct(lastW.views, prevW.views) : undefined}
+                delta={prevReport ? pct(report.kpi.totalViews, prevReport.kpi.totalViews) : (lastW && prevW ? pct(lastW.views, prevW.views) : undefined)}
                 gradient="from-violet-500 to-fuchsia-500"
               />
               <KpiCard
                 icon={Users} label="Người dùng"
                 value={fmt(report.kpi.activeUsers)}
                 hint={`${fmt(report.kpi.newUsers)} người dùng mới`}
-                delta={lastW && prevW ? pct(lastW.users, prevW.users) : undefined}
+                delta={prevReport ? pct(report.kpi.activeUsers, prevReport.kpi.activeUsers) : (lastW && prevW ? pct(lastW.users, prevW.users) : undefined)}
                 gradient="from-sky-500 to-blue-600"
               />
               <KpiCard
                 icon={Activity} label="Sự kiện"
                 value={fmt(report.kpi.events)}
-                delta={lastW && prevW ? pct(lastW.events, prevW.events) : undefined}
+                delta={prevReport ? pct(report.kpi.events, prevReport.kpi.events) : (lastW && prevW ? pct(lastW.events, prevW.events) : undefined)}
                 gradient="from-emerald-500 to-teal-500"
               />
               <KpiCard
