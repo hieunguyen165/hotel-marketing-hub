@@ -31,24 +31,24 @@ function KpiCard({
 }: { icon: any; label: string; value: string; delta?: number; hint?: string; gradient: string }) {
   const positive = (delta ?? 0) >= 0;
   return (
-    <Card className="relative overflow-hidden border-0 bg-card p-5 shadow-card-soft">
-      <div className={`absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-2xl`} />
-      <div className="relative flex items-start justify-between">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-          <p className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">{value}</p>
-          {hint && <p className="mt-1 text-[11px] text-muted-foreground">{hint}</p>}
+    <Card className="relative overflow-hidden border-0 bg-card p-3 shadow-card-soft">
+      <div className={`absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-2xl`} />
+      <div className="relative flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+          <p className="mt-1 font-display text-xl font-bold tracking-tight">{value}</p>
+          {hint && <p className="mt-0.5 text-[10px] text-muted-foreground">{hint}</p>}
         </div>
-        <span className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm`}>
-          <Icon className="h-5 w-5" />
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${gradient} text-white shadow-sm`}>
+          <Icon className="h-4 w-4" />
         </span>
       </div>
       {typeof delta === "number" && (
-        <div className={`relative mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+        <div className={`relative mt-2 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
           positive ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
         }`}>
           {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-          {Math.abs(delta).toFixed(1)}% vs tuần trước
+          {Math.abs(delta).toFixed(1)}% vs trước
         </div>
       )}
     </Card>
@@ -240,19 +240,19 @@ export function WebsiteReportPanel() {
   const periodLabel = periodMode === "week" ? "tuần" : periodMode === "month" ? "tháng" : "năm";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* === Toolbar: lịch sử + filter Tuần/Tháng/Năm + upload === */}
-      <Card className="bg-card p-4 shadow-card-soft">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-sm">
+      <Card className="bg-card p-2.5 shadow-card-soft">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs">
               <Database className="h-4 w-4 text-violet-500" />
               <span className="font-semibold">{history.length}</span>
               <span className="text-muted-foreground">báo cáo đã lưu</span>
             </div>
             {history.length > 0 && (
               <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v)}>
-                <SelectTrigger className="h-9 w-[260px]">
+                <SelectTrigger className="h-8 w-[240px] text-xs">
                   <SelectValue placeholder="Chọn kỳ báo cáo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,38 +268,37 @@ export function WebsiteReportPanel() {
               </Select>
             )}
             <Tabs value={periodMode} onValueChange={(v) => setPeriodMode(v as PeriodMode)}>
-              <TabsList>
-                <TabsTrigger value="week">Tuần</TabsTrigger>
-                <TabsTrigger value="month">Tháng</TabsTrigger>
-                <TabsTrigger value="year">Năm</TabsTrigger>
+              <TabsList className="h-8">
+                <TabsTrigger value="week" className="text-xs px-2.5 py-1">Tuần</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs px-2.5 py-1">Tháng</TabsTrigger>
+                <TabsTrigger value="year" className="text-xs px-2.5 py-1">Năm</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
           <div className="flex gap-2">
             {report && (
               <Button
-                variant="outline" size="sm"
+                variant="outline" size="sm" className="h-8 text-xs"
                 onClick={() => onDelete(report.id)}
-                className="text-rose-600 hover:text-rose-700"
               >
-                <Trash2 className="mr-2 h-4 w-4" /> Xoá kỳ này
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Xoá
               </Button>
             )}
             <Button
               size="sm"
               onClick={() => setShowUpload((v) => !v)}
-              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
+              className="h-8 text-xs bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
             >
-              <Upload className="mr-2 h-4 w-4" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
+              <Upload className="mr-1.5 h-3.5 w-3.5" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
             </Button>
           </div>
         </div>
 
         {/* Upload area inline */}
         {(showUpload || history.length === 0) && (
-          <div className="mt-4">
+          <div className="mt-3">
             {loading ? (
-              <Card className="p-10 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
+              <Card className="p-6 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
             ) : (
               <UploadZone onFile={onFile} />
             )}
@@ -309,19 +308,19 @@ export function WebsiteReportPanel() {
 
       {/* === Biểu đồ xu hướng nhiều kỳ === */}
       {history.length >= 1 && (
-        <Card className="bg-card p-5">
+        <Card className="bg-card p-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="flex items-center gap-2 font-display text-base font-bold">
-                <History className="h-4 w-4 text-violet-500" /> Xu hướng theo {periodLabel}
+              <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+                <History className="h-3.5 w-3.5 text-violet-500" /> Xu hướng theo {periodLabel}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 Tổng hợp các kỳ đã lưu — {periodSeries.length} {periodLabel}
                 {prevP && lastP && ` • ${periodLabel} hiện tại ${pct(lastP.views, prevP.views) >= 0 ? "tăng" : "giảm"} ${Math.abs(pct(lastP.views, prevP.views)).toFixed(1)}% lượt xem`}
               </p>
             </div>
           </div>
-          <div className="mt-4 h-64">
+          <div className="mt-2 h-44">
             <ResponsiveContainer>
               <ComposedChart data={periodSeries}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -329,7 +328,7 @@ export function WebsiteReportPanel() {
                 <YAxis yAxisId="l" className="text-xs" />
                 <YAxis yAxisId="r" orientation="right" className="text-xs" />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[6, 6, 0, 0]} />
                 <Line yAxisId="r" type="monotone" dataKey="users" name="Người dùng" stroke="hsl(330 80% 55%)" strokeWidth={2.5} />
                 <Line yAxisId="r" type="monotone" dataKey="newUsers" name="User mới" stroke="hsl(160 70% 45%)" strokeWidth={2} strokeDasharray="4 4" />
@@ -340,26 +339,26 @@ export function WebsiteReportPanel() {
       )}
 
       {!report ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground">
+        <Card className="p-6 text-center text-sm text-muted-foreground">
           Chưa có báo cáo nào — hãy tải file Analytics tuần đầu tiên lên.
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Header thông tin kỳ đang xem */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-violet-500" />
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-card-soft">
+            <div className="flex items-center gap-2 text-xs">
+              <Calendar className="h-3.5 w-3.5 text-violet-500" />
               <div>
-                <p className="font-semibold text-foreground">{periodOf(report, periodMode).label}</p>
-                <p className="text-xs text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
+                <p className="font-semibold text-foreground text-sm">{periodOf(report, periodMode).label}</p>
+                <p className="text-[11px] text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-xs">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
+            <Badge variant="secondary" className="text-[10px]">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
           </div>
 
           {/* === KPI === */}
           <section>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
               <KpiCard
                 icon={Eye} label="Tổng lượt xem"
                 value={fmt(report.kpi.totalViews)}
@@ -389,35 +388,35 @@ export function WebsiteReportPanel() {
           </section>
 
           {/* === Insight + warning === */}
-          <section className="grid gap-4 lg:grid-cols-3">
-            <Card className="bg-card p-5 lg:col-span-2">
-              <h3 className="flex items-center gap-2 font-display text-base font-bold">
-                <Lightbulb className="h-4 w-4 text-amber-500" /> Nhận định tự động
+          <section className="grid gap-3 lg:grid-cols-3">
+            <Card className="bg-card p-3 lg:col-span-2">
+              <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+                <Lightbulb className="h-3.5 w-3.5 text-amber-500" /> Nhận định tự động
               </h3>
-              <div className="mt-3 space-y-2">
+              <div className="mt-2 space-y-1.5">
                 {insights.length === 0 && (
-                  <p className="text-sm text-muted-foreground">Hiệu suất tuần này ở mức ổn định, chưa có biến động lớn.</p>
+                  <p className="text-xs text-muted-foreground">Hiệu suất tuần này ở mức ổn định, chưa có biến động lớn.</p>
                 )}
                 {insights.map((i, idx) => (
-                  <div key={idx} className="flex items-start gap-3 rounded-lg bg-muted/40 p-3">
-                    <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                  <div key={idx} className="flex items-start gap-2 rounded-lg bg-muted/40 p-2">
+                    <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
                       i.type === "good" ? "bg-emerald-500/15 text-emerald-600"
                         : i.type === "warn" ? "bg-amber-500/15 text-amber-600"
                         : "bg-rose-500/15 text-rose-600"
                     }`}>
-                      {i.type === "good" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                      {i.type === "good" ? <CheckCircle2 className="h-3.5 w-3.5" /> : <AlertTriangle className="h-3.5 w-3.5" />}
                     </span>
-                    <p className="text-sm">{i.text}</p>
+                    <p className="text-xs">{i.text}</p>
                   </div>
                 ))}
               </div>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="flex items-center gap-2 font-display text-base font-bold">
-                <Sparkles className="h-4 w-4 text-violet-500" /> Tóm tắt KPI
+            <Card className="bg-card p-3">
+              <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+                <Sparkles className="h-3.5 w-3.5 text-violet-500" /> Tóm tắt KPI
               </h3>
-              <ul className="mt-3 space-y-2 text-sm">
+              <ul className="mt-2 space-y-1 text-xs">
                 <li className="flex justify-between"><span className="text-muted-foreground">Lượt xem</span><span className="font-semibold">{fmt(report.kpi.totalViews)}</span></li>
                 <li className="flex justify-between"><span className="text-muted-foreground">Người dùng</span><span className="font-semibold">{fmt(report.kpi.activeUsers)}</span></li>
                 <li className="flex justify-between"><span className="text-muted-foreground">User mới</span><span className="font-semibold">{fmt(report.kpi.newUsers)}</span></li>
@@ -429,18 +428,18 @@ export function WebsiteReportPanel() {
           </section>
 
           {/* === Hàng 1: Xu hướng + Combo + Top pages === */}
-          <section className="grid gap-4 lg:grid-cols-3">
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Xu hướng theo tuần</h3>
-              <p className="text-xs text-muted-foreground">Diễn biến 4 tuần gần nhất của lượt xem, user và sự kiện.</p>
-              <div className="mt-4 h-64">
+          <section className="grid gap-3 lg:grid-cols-3">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Xu hướng theo tuần</h3>
+              <p className="text-[11px] text-muted-foreground">Diễn biến 4 tuần gần nhất của lượt xem, user và sự kiện.</p>
+              <div className="mt-2 h-48">
                 <ResponsiveContainer>
                   <LineChart data={weekly}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis dataKey="week" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Line type="monotone" dataKey="views" name="Lượt xem" stroke="hsl(280 70% 55%)" strokeWidth={2.5} dot={{ r: 3 }} />
                     <Line type="monotone" dataKey="users" name="Người dùng" stroke="hsl(210 80% 55%)" strokeWidth={2.5} dot={{ r: 3 }} />
                     <Line type="monotone" dataKey="events" name="Sự kiện" stroke="hsl(160 70% 45%)" strokeWidth={2.5} dot={{ r: 3 }} />
@@ -452,10 +451,10 @@ export function WebsiteReportPanel() {
               </InsightLine>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Lượt xem vs Người dùng (Combo)</h3>
-              <p className="text-xs text-muted-foreground">Đối chiếu để thấy hiệu suất "view trên đầu user".</p>
-              <div className="mt-4 h-64">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Lượt xem vs Người dùng (Combo)</h3>
+              <p className="text-[11px] text-muted-foreground">Đối chiếu để thấy hiệu suất "view trên đầu user".</p>
+              <div className="mt-2 h-48">
                 <ResponsiveContainer>
                   <ComposedChart data={weekly}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -463,7 +462,7 @@ export function WebsiteReportPanel() {
                     <YAxis yAxisId="l" className="text-xs" />
                     <YAxis yAxisId="r" orientation="right" className="text-xs" />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[6, 6, 0, 0]} />
                     <Line yAxisId="r" type="monotone" dataKey="users" name="Người dùng" stroke="hsl(330 80% 55%)" strokeWidth={2.5} />
                   </ComposedChart>
@@ -474,15 +473,15 @@ export function WebsiteReportPanel() {
               </InsightLine>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Top 10 trang theo lượt xem</h3>
-              <p className="text-xs text-muted-foreground">Trang đem lại nhiều traffic nhất.</p>
-              <div className="mt-4 h-64">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Top 10 trang theo lượt xem</h3>
+              <p className="text-[11px] text-muted-foreground">Trang đem lại nhiều traffic nhất.</p>
+              <div className="mt-2 h-48">
                 <ResponsiveContainer>
-                  <BarChart data={topPages.map((p) => ({ name: trimTitle(p.title, 30), views: p.views }))} layout="vertical" margin={{ left: 10, right: 24 }}>
+                  <BarChart data={topPages.map((p) => ({ name: trimTitle(p.title, 22), views: p.views }))} layout="vertical" margin={{ left: 4, right: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis type="number" className="text-xs" />
-                    <YAxis type="category" dataKey="name" width={120} className="text-[10px]" />
+                    <YAxis type="category" dataKey="name" width={100} className="text-[10px]" />
                     <Tooltip />
                     <Bar dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
@@ -495,11 +494,11 @@ export function WebsiteReportPanel() {
           </section>
 
           {/* === Hàng 2: Pareto + Scatter + Bounce === */}
-          <section className="grid gap-4 lg:grid-cols-3">
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Pareto — nhóm trang tạo phần lớn traffic</h3>
-              <p className="text-xs text-muted-foreground">Bao nhiêu % trang tạo ra 80% traffic?</p>
-              <div className="mt-4 h-[320px]">
+          <section className="grid gap-3 lg:grid-cols-3">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Pareto — nhóm trang tạo phần lớn traffic</h3>
+              <p className="text-[11px] text-muted-foreground">Bao nhiêu % trang tạo ra 80% traffic?</p>
+              <div className="mt-2 h-56">
                 <ResponsiveContainer>
                   <ComposedChart data={pareto} margin={{ left: 0, right: 16, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -507,7 +506,7 @@ export function WebsiteReportPanel() {
                     <YAxis yAxisId="l" className="text-xs" />
                     <YAxis yAxisId="r" orientation="right" unit="%" domain={[0, 100]} className="text-xs" />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(210 80% 60%)" radius={[6, 6, 0, 0]} />
                     <Line yAxisId="r" type="monotone" dataKey="cum" name="% luỹ kế" stroke="hsl(0 75% 55%)" strokeWidth={2.5} dot={{ r: 3 }} />
                   </ComposedChart>
@@ -518,10 +517,10 @@ export function WebsiteReportPanel() {
               </InsightLine>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Phân tích Views × Bounce × Events</h3>
-              <p className="text-xs text-muted-foreground">Bong bóng càng to = nhiều sự kiện. Góc phải-dưới là vùng "vàng".</p>
-              <div className="mt-4 h-[320px]">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Phân tích Views × Bounce × Events</h3>
+              <p className="text-[11px] text-muted-foreground">Bong bóng càng to = nhiều sự kiện. Góc phải-dưới là vùng "vàng".</p>
+              <div className="mt-2 h-56">
                 <ResponsiveContainer>
                   <ScatterChart margin={{ left: 0, right: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -542,15 +541,15 @@ export function WebsiteReportPanel() {
               </InsightLine>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Trang có Bounce Rate cao nhất</h3>
-              <p className="text-xs text-muted-foreground">Top trang cần được tối ưu trải nghiệm.</p>
-              <div className="mt-4 h-[320px]">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Trang có Bounce Rate cao nhất</h3>
+              <p className="text-[11px] text-muted-foreground">Top trang cần được tối ưu trải nghiệm.</p>
+              <div className="mt-2 h-56">
                 <ResponsiveContainer>
-                  <BarChart data={problemPages.map((p) => ({ name: trimTitle(p.title, 28), bounce: +(p.bounceRate * 100).toFixed(1), views: p.views }))} layout="vertical" margin={{ left: 10, right: 16 }}>
+                  <BarChart data={problemPages.map((p) => ({ name: trimTitle(p.title, 22), bounce: +(p.bounceRate * 100).toFixed(1), views: p.views }))} layout="vertical" margin={{ left: 4, right: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis type="number" unit="%" domain={[0, 100]} className="text-xs" />
-                    <YAxis type="category" dataKey="name" width={120} className="text-[10px]" />
+                    <YAxis type="category" dataKey="name" width={100} className="text-[10px]" />
                     <Tooltip />
                     <Bar dataKey="bounce" name="Bounce %" fill="hsl(0 75% 60%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
@@ -563,18 +562,18 @@ export function WebsiteReportPanel() {
           </section>
 
           {/* === User behaviour: new vs returning + sources === */}
-          <section className="grid gap-4 lg:grid-cols-2">
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Hành vi người dùng — User mới vs quay lại</h3>
-              <p className="text-xs text-muted-foreground">Tổng hợp theo tuần từ dữ liệu hằng ngày.</p>
-              <div className="mt-4 h-64">
+          <section className="grid gap-3 lg:grid-cols-2">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Hành vi người dùng — User mới vs quay lại</h3>
+              <p className="text-[11px] text-muted-foreground">Tổng hợp theo tuần từ dữ liệu hằng ngày.</p>
+              <div className="mt-2 h-48">
                 <ResponsiveContainer>
                   <BarChart data={weekly}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis dataKey="week" className="text-xs" />
                     <YAxis className="text-xs" />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Bar dataKey="newUsers" name="User mới" stackId="a" fill="hsl(280 70% 60%)" radius={[0, 0, 0, 0]} />
                     <Bar dataKey="returningUsers" name="Quay lại" stackId="a" fill="hsl(330 80% 60%)" radius={[6, 6, 0, 0]} />
                   </BarChart>
@@ -585,15 +584,15 @@ export function WebsiteReportPanel() {
               </InsightLine>
             </Card>
 
-            <Card className="bg-card p-5">
-              <h3 className="font-display text-base font-bold">Top nguồn truy cập</h3>
-              <p className="text-xs text-muted-foreground">Theo "Nguồn / Phương tiện" của người dùng.</p>
-              <div className="mt-4 h-64">
+            <Card className="bg-card p-3">
+              <h3 className="font-display text-sm font-bold">Top nguồn truy cập</h3>
+              <p className="text-[11px] text-muted-foreground">Theo "Nguồn / Phương tiện" của người dùng.</p>
+              <div className="mt-2 h-48">
                 <ResponsiveContainer>
-                  <BarChart data={report.userSources.slice(0, 8).map((s) => ({ name: s.source, value: s.value }))} layout="vertical" margin={{ left: 10, right: 16 }}>
+                  <BarChart data={report.userSources.slice(0, 8).map((s) => ({ name: s.source, value: s.value }))} layout="vertical" margin={{ left: 4, right: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis type="number" className="text-xs" />
-                    <YAxis type="category" dataKey="name" width={150} className="text-[11px]" />
+                    <YAxis type="category" dataKey="name" width={120} className="text-[10px]" />
                     <Tooltip />
                     <Bar dataKey="value" name="Người dùng" fill="hsl(210 80% 60%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
@@ -607,18 +606,18 @@ export function WebsiteReportPanel() {
 
           {/* === Recommendations === */}
           <section>
-            <Card className="bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-sky-500/10 p-5">
-              <h3 className="flex items-center gap-2 font-display text-base font-bold">
-                <MousePointerClick className="h-4 w-4 text-fuchsia-500" /> Đề xuất hành động cho tuần tiếp theo
+            <Card className="bg-gradient-to-br from-violet-500/10 via-fuchsia-500/5 to-sky-500/10 p-3">
+              <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+                <MousePointerClick className="h-3.5 w-3.5 text-fuchsia-500" /> Đề xuất hành động cho tuần tiếp theo
               </h3>
-              <ol className="mt-3 space-y-2">
+              <ol className="mt-2 grid gap-1.5 md:grid-cols-2">
                 {recommendations.map((r, i) => (
-                  <li key={i} className="flex items-start gap-3 rounded-lg bg-card/70 p-3 text-sm shadow-sm">
-                    <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-[11px] font-bold text-white">
+                  <li key={i} className="flex items-start gap-2 rounded-lg bg-card/70 p-2 text-xs shadow-sm">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 text-[10px] font-bold text-white">
                       {i + 1}
                     </span>
                     <span>{r}</span>
-                    <ArrowRight className="ml-auto mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <ArrowRight className="ml-auto mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   </li>
                 ))}
               </ol>
