@@ -240,19 +240,19 @@ export function WebsiteReportPanel() {
   const periodLabel = periodMode === "week" ? "tuần" : periodMode === "month" ? "tháng" : "năm";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* === Toolbar: lịch sử + filter Tuần/Tháng/Năm + upload === */}
-      <Card className="bg-card p-4 shadow-card-soft">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-sm">
+      <Card className="bg-card p-2.5 shadow-card-soft">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1.5 text-xs">
               <Database className="h-4 w-4 text-violet-500" />
               <span className="font-semibold">{history.length}</span>
               <span className="text-muted-foreground">báo cáo đã lưu</span>
             </div>
             {history.length > 0 && (
               <Select value={selectedId ?? ""} onValueChange={(v) => setSelectedId(v)}>
-                <SelectTrigger className="h-9 w-[260px]">
+                <SelectTrigger className="h-8 w-[240px] text-xs">
                   <SelectValue placeholder="Chọn kỳ báo cáo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -268,38 +268,37 @@ export function WebsiteReportPanel() {
               </Select>
             )}
             <Tabs value={periodMode} onValueChange={(v) => setPeriodMode(v as PeriodMode)}>
-              <TabsList>
-                <TabsTrigger value="week">Tuần</TabsTrigger>
-                <TabsTrigger value="month">Tháng</TabsTrigger>
-                <TabsTrigger value="year">Năm</TabsTrigger>
+              <TabsList className="h-8">
+                <TabsTrigger value="week" className="text-xs px-2.5 py-1">Tuần</TabsTrigger>
+                <TabsTrigger value="month" className="text-xs px-2.5 py-1">Tháng</TabsTrigger>
+                <TabsTrigger value="year" className="text-xs px-2.5 py-1">Năm</TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
           <div className="flex gap-2">
             {report && (
               <Button
-                variant="outline" size="sm"
+                variant="outline" size="sm" className="h-8 text-xs"
                 onClick={() => onDelete(report.id)}
-                className="text-rose-600 hover:text-rose-700"
               >
-                <Trash2 className="mr-2 h-4 w-4" /> Xoá kỳ này
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Xoá
               </Button>
             )}
             <Button
               size="sm"
               onClick={() => setShowUpload((v) => !v)}
-              className="bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
+              className="h-8 text-xs bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white"
             >
-              <Upload className="mr-2 h-4 w-4" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
+              <Upload className="mr-1.5 h-3.5 w-3.5" /> {showUpload ? "Đóng" : "Tải báo cáo mới"}
             </Button>
           </div>
         </div>
 
         {/* Upload area inline */}
         {(showUpload || history.length === 0) && (
-          <div className="mt-4">
+          <div className="mt-3">
             {loading ? (
-              <Card className="p-10 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
+              <Card className="p-6 text-center text-sm text-muted-foreground">Đang đọc dữ liệu…</Card>
             ) : (
               <UploadZone onFile={onFile} />
             )}
@@ -309,19 +308,19 @@ export function WebsiteReportPanel() {
 
       {/* === Biểu đồ xu hướng nhiều kỳ === */}
       {history.length >= 1 && (
-        <Card className="bg-card p-5">
+        <Card className="bg-card p-3">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="flex items-center gap-2 font-display text-base font-bold">
-                <History className="h-4 w-4 text-violet-500" /> Xu hướng theo {periodLabel}
+              <h3 className="flex items-center gap-2 font-display text-sm font-bold">
+                <History className="h-3.5 w-3.5 text-violet-500" /> Xu hướng theo {periodLabel}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 Tổng hợp các kỳ đã lưu — {periodSeries.length} {periodLabel}
                 {prevP && lastP && ` • ${periodLabel} hiện tại ${pct(lastP.views, prevP.views) >= 0 ? "tăng" : "giảm"} ${Math.abs(pct(lastP.views, prevP.views)).toFixed(1)}% lượt xem`}
               </p>
             </div>
           </div>
-          <div className="mt-4 h-64">
+          <div className="mt-2 h-44">
             <ResponsiveContainer>
               <ComposedChart data={periodSeries}>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -329,7 +328,7 @@ export function WebsiteReportPanel() {
                 <YAxis yAxisId="l" className="text-xs" />
                 <YAxis yAxisId="r" orientation="right" className="text-xs" />
                 <Tooltip />
-                <Legend />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Bar yAxisId="l" dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[6, 6, 0, 0]} />
                 <Line yAxisId="r" type="monotone" dataKey="users" name="Người dùng" stroke="hsl(330 80% 55%)" strokeWidth={2.5} />
                 <Line yAxisId="r" type="monotone" dataKey="newUsers" name="User mới" stroke="hsl(160 70% 45%)" strokeWidth={2} strokeDasharray="4 4" />
@@ -340,26 +339,26 @@ export function WebsiteReportPanel() {
       )}
 
       {!report ? (
-        <Card className="p-10 text-center text-sm text-muted-foreground">
+        <Card className="p-6 text-center text-sm text-muted-foreground">
           Chưa có báo cáo nào — hãy tải file Analytics tuần đầu tiên lên.
         </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Header thông tin kỳ đang xem */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 shadow-card-soft">
-            <div className="flex items-center gap-3 text-sm">
-              <Calendar className="h-4 w-4 text-violet-500" />
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 shadow-card-soft">
+            <div className="flex items-center gap-2 text-xs">
+              <Calendar className="h-3.5 w-3.5 text-violet-500" />
               <div>
-                <p className="font-semibold text-foreground">{periodOf(report, periodMode).label}</p>
-                <p className="text-xs text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
+                <p className="font-semibold text-foreground text-sm">{periodOf(report, periodMode).label}</p>
+                <p className="text-[11px] text-muted-foreground">{report.account} • {report.property} • {report.startDate} → {report.endDate}</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-xs">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
+            <Badge variant="secondary" className="text-[10px]">Đã lưu {new Date(report.savedAt).toLocaleString("vi-VN")}</Badge>
           </div>
 
           {/* === KPI === */}
           <section>
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
               <KpiCard
                 icon={Eye} label="Tổng lượt xem"
                 value={fmt(report.kpi.totalViews)}
