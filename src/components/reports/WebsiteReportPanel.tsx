@@ -152,6 +152,13 @@ export function WebsiteReportPanel() {
   const lastP = periodSeries[periodSeries.length - 1];
   const prevP = periodSeries[periodSeries.length - 2];
 
+  /** Báo cáo của kỳ liền trước trong history (để so sánh KPI thực giữa 2 kỳ đã upload). */
+  const prevReport = useMemo(() => {
+    if (!report) return null;
+    const idx = history.findIndex((r) => r.id === report.id);
+    return idx > 0 ? history[idx - 1] : null;
+  }, [history, report]);
+
   const weekly = useMemo(() => (report ? buildWeeklySeries(report) : []), [report]);
   const lastW = weekly[weekly.length - 1];
   const prevW = weekly[weekly.length - 2];
@@ -356,20 +363,20 @@ export function WebsiteReportPanel() {
               <KpiCard
                 icon={Eye} label="Tổng lượt xem"
                 value={fmt(report.kpi.totalViews)}
-                delta={lastW && prevW ? pct(lastW.views, prevW.views) : undefined}
+                delta={prevReport ? pct(report.kpi.totalViews, prevReport.kpi.totalViews) : (lastW && prevW ? pct(lastW.views, prevW.views) : undefined)}
                 gradient="from-violet-500 to-fuchsia-500"
               />
               <KpiCard
                 icon={Users} label="Người dùng"
                 value={fmt(report.kpi.activeUsers)}
                 hint={`${fmt(report.kpi.newUsers)} người dùng mới`}
-                delta={lastW && prevW ? pct(lastW.users, prevW.users) : undefined}
+                delta={prevReport ? pct(report.kpi.activeUsers, prevReport.kpi.activeUsers) : (lastW && prevW ? pct(lastW.users, prevW.users) : undefined)}
                 gradient="from-sky-500 to-blue-600"
               />
               <KpiCard
                 icon={Activity} label="Sự kiện"
                 value={fmt(report.kpi.events)}
-                delta={lastW && prevW ? pct(lastW.events, prevW.events) : undefined}
+                delta={prevReport ? pct(report.kpi.events, prevReport.kpi.events) : (lastW && prevW ? pct(lastW.events, prevW.events) : undefined)}
                 gradient="from-emerald-500 to-teal-500"
               />
               <KpiCard
