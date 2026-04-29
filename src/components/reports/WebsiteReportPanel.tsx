@@ -105,14 +105,33 @@ function InsightLine({ children }: { children: React.ReactNode }) {
 /* ---------- Panel ---------- */
 export function WebsiteReportPanel() {
   const { toast } = useToast();
-  const [report, setReport] = useState<GA4Report | null>(null);
+  const [history, setHistory] = useState<StoredReport[]>(() => loadReports());
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("week");
+  const [showUpload, setShowUpload] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Auto-select latest report on first load
+  useEffect(() => {
+    if (!selectedId && history.length > 0) {
+      setSelectedId(history[history.length - 1].id);
+    }
+  }, [history, selectedId]);
+
+  const report = useMemo(
+    () => history.find((r) => r.id === selectedId) ?? null,
+    [history, selectedId],
+  );
 
   const onFile = useCallback(async (file: File) => {
     try {
       setLoading(true);
       const r = await parseGA4Workbook(file);
-      setReport(r);
+      const list = upsertReport(r);
+      setHistory(list);
+      const saved = list.find((x) => x.startDate === r.startDate && x.endDate === r.endDate);
+      if (saved) setSelectedId(saved.id);
+      setShowUpload(false);
       toast({ title: "Đã đọc file thành công", description: `${r.pages.length} trang • Kỳ ${r.startDate} → ${r.endDate}` });
     } catch (e: any) {
       toast({ title: "Không đọc được file", description: e?.message ?? "Vui lòng kiểm tra định dạng.", variant: "destructive" });
@@ -120,6 +139,18 @@ export function WebsiteReportPanel() {
       setLoading(false);
     }
   }, [toast]);
+
+  const onDelete = useCallback((id: string) => {
+    const list = deleteReport(id);
+    setHistory(list);
+    if (selectedId === id) setSelectedId(list[list.length - 1]?.id ?? null);
+    toast({ title: "Đã xoá báo cáo" });
+  }, [selectedId, toast]);
+
+  /* -------- Period series across stored reports -------- */
+  const periodSeries = useMemo(() => aggregateByPeriod(history, periodMode), [history, periodMode]);
+  const lastP = periodSeries[periodSeries.length - 1];
+  const prevP = periodSeries[periodSeries.length - 2];
 
   const weekly = useMemo(() => (report ? buildWeeklySeries(report) : []), [report]);
   const lastW = weekly[weekly.length - 1];
