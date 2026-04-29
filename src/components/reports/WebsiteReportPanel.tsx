@@ -428,8 +428,8 @@ export function WebsiteReportPanel() {
             </Card>
           </section>
 
-          {/* === Trend & Combo === */}
-          <section className="grid gap-4 lg:grid-cols-2">
+          {/* === Hàng 1: Xu hướng + Combo + Top pages === */}
+          <section className="grid gap-4 lg:grid-cols-3">
             <Card className="bg-card p-5">
               <h3 className="font-display text-base font-bold">Xu hướng theo tuần</h3>
               <p className="text-xs text-muted-foreground">Diễn biến 4 tuần gần nhất của lượt xem, user và sự kiện.</p>
@@ -473,19 +473,16 @@ export function WebsiteReportPanel() {
                 Trung bình mỗi user xem <b>{(report.kpi.totalViews / Math.max(1, report.kpi.activeUsers)).toFixed(2)}</b> trang — chỉ số càng cao càng cho thấy nội dung hấp dẫn.
               </InsightLine>
             </Card>
-          </section>
 
-          {/* === Top pages bar + Pareto === */}
-          <section className="grid gap-4 lg:grid-cols-2">
             <Card className="bg-card p-5">
               <h3 className="font-display text-base font-bold">Top 10 trang theo lượt xem</h3>
               <p className="text-xs text-muted-foreground">Trang đem lại nhiều traffic nhất.</p>
-              <div className="mt-4 h-[360px]">
+              <div className="mt-4 h-64">
                 <ResponsiveContainer>
                   <BarChart data={topPages.map((p) => ({ name: trimTitle(p.title, 30), views: p.views }))} layout="vertical" margin={{ left: 10, right: 24 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis type="number" className="text-xs" />
-                    <YAxis type="category" dataKey="name" width={170} className="text-[10px]" />
+                    <YAxis type="category" dataKey="name" width={120} className="text-[10px]" />
                     <Tooltip />
                     <Bar dataKey="views" name="Lượt xem" fill="hsl(280 70% 60%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
@@ -495,11 +492,14 @@ export function WebsiteReportPanel() {
                 Top 1 (<b>{trimTitle(topPages[0]?.title ?? "", 40)}</b>) đóng góp <b>{((topPages[0]?.views ?? 0) / Math.max(1, report.kpi.totalViews) * 100).toFixed(1)}%</b> tổng lượt xem.
               </InsightLine>
             </Card>
+          </section>
 
+          {/* === Hàng 2: Pareto + Scatter + Bounce === */}
+          <section className="grid gap-4 lg:grid-cols-3">
             <Card className="bg-card p-5">
               <h3 className="font-display text-base font-bold">Pareto — nhóm trang tạo phần lớn traffic</h3>
               <p className="text-xs text-muted-foreground">Bao nhiêu % trang tạo ra 80% traffic?</p>
-              <div className="mt-4 h-[360px]">
+              <div className="mt-4 h-[320px]">
                 <ResponsiveContainer>
                   <ComposedChart data={pareto} margin={{ left: 0, right: 16, bottom: 30 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
@@ -517,10 +517,7 @@ export function WebsiteReportPanel() {
                 Nhóm top {Math.max(1, pareto.findIndex((p) => p.cum >= 80) + 1)} trang đã tạo ra ~80% tổng lượt xem — ưu tiên nguồn lực tối ưu nhóm này.
               </InsightLine>
             </Card>
-          </section>
 
-          {/* === Scatter + Bounce === */}
-          <section className="grid gap-4 lg:grid-cols-2">
             <Card className="bg-card p-5">
               <h3 className="font-display text-base font-bold">Phân tích Views × Bounce × Events</h3>
               <p className="text-xs text-muted-foreground">Bong bóng càng to = nhiều sự kiện. Góc phải-dưới là vùng "vàng".</p>
@@ -553,7 +550,7 @@ export function WebsiteReportPanel() {
                   <BarChart data={problemPages.map((p) => ({ name: trimTitle(p.title, 28), bounce: +(p.bounceRate * 100).toFixed(1), views: p.views }))} layout="vertical" margin={{ left: 10, right: 16 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border/50" />
                     <XAxis type="number" unit="%" domain={[0, 100]} className="text-xs" />
-                    <YAxis type="category" dataKey="name" width={170} className="text-[10px]" />
+                    <YAxis type="category" dataKey="name" width={120} className="text-[10px]" />
                     <Tooltip />
                     <Bar dataKey="bounce" name="Bounce %" fill="hsl(0 75% 60%)" radius={[0, 6, 6, 0]} />
                   </BarChart>
