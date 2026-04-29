@@ -19,6 +19,7 @@ import {
 } from "@/lib/reportHistory";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* ---------- Helpers ---------- */
 const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(Math.round(n));
