@@ -32,6 +32,7 @@ jobs:
           VITE_SUPABASE_URL: https://ukktgmhmhxkgnyblqybb.supabase.co
           VITE_SUPABASE_PUBLISHABLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVra3RnbWhtaHhrZ255YmxxeWJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MjA1ODQsImV4cCI6MjA5Mjk5NjU4NH0.nd-JTxiVtkOrFy70F9pEu1ahca2paVnibso5JIfpeII
           VITE_SUPABASE_PROJECT_ID: ukktgmhmhxkgnyblqybb
+          VITE_GITHUB_PAGES: "true"
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: bun run build
 
