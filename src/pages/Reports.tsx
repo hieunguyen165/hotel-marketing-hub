@@ -833,10 +833,18 @@ function FanpageMetricsSheet({
   data,
   allFields,
   groups,
+  canEdit,
+  onEditWeek,
+  onDeleteWeek,
+  editingWeek,
 }: {
   data: WeeklyReport[];
   allFields: { key: string; label: string; invert?: boolean }[];
   groups: { title: string; color: string; fields: { key: string; label: string; invert?: boolean }[] }[];
+  canEdit?: boolean;
+  onEditWeek?: (week: string) => void;
+  onDeleteWeek?: (week: string) => void;
+  editingWeek?: string | null;
 }) {
   const weeks = data;
   const fieldGroupColor = (key: string) => {
@@ -861,7 +869,21 @@ function FanpageMetricsSheet({
             <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
               <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-semibold">Chỉ số</th>
               {weeks.map((w) => (
-                <th key={w.week} className="px-3 py-3 text-right font-semibold">{w.week}</th>
+                <th key={w.week} className={`px-3 py-3 text-right font-semibold ${editingWeek === w.week ? "bg-primary/10" : ""}`}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span>{w.week}</span>
+                    {canEdit && (
+                      <span className="inline-flex">
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onEditWeek?.(w.week)} title="Sửa">
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => onDeleteWeek?.(w.week)} title="Xoá">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </span>
+                    )}
+                  </div>
+                </th>
               ))}
             </tr>
           </thead>
