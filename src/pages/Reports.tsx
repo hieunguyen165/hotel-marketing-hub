@@ -1079,14 +1079,20 @@ const fanpageGroups: {
 function FanpageView({
   data,
   onAdd,
+  onEdit,
+  onDelete,
 }: {
   data: WeeklyReport[];
   onAdd: (week: string, values: FanpageValues) => void;
+  onEdit: (originalWeek: string, newWeek: string, values: FanpageValues) => void;
+  onDelete: (week: string) => void;
 }) {
   const last = data[data.length - 1];
   const prev = data[data.length - 2];
   const meta = channelMeta.fanpage;
   const Icon = meta.icon;
+  const { canEdit } = useAuth();
+  const [editingWeek, setEditingWeek] = useState<string | null>(null);
 
   // Bộ lọc Tuần / Tháng / Năm
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
@@ -1105,9 +1111,36 @@ function FanpageView({
     if (!week.trim()) return;
     const numeric = {} as FanpageValues;
     for (const f of allFields) (numeric as any)[f.key] = Number(values[f.key]) || 0;
-    onAdd(week.trim(), numeric);
+    if (editingWeek) {
+      onEdit(editingWeek, week.trim(), numeric);
+      setEditingWeek(null);
+    } else {
+      onAdd(week.trim(), numeric);
+    }
     setValues(Object.fromEntries(allFields.map((f) => [f.key, ""])));
     setWeek(`T${parseInt(week.replace("T", "")) + 1}`);
+  };
+
+  const startEdit = (wkLabel: string) => {
+    const row = data.find((d) => d.week === wkLabel);
+    if (!row) return;
+    const raw = row.fanpage as any;
+    setEditingWeek(wkLabel);
+    setWeek(wkLabel);
+    setValues(Object.fromEntries(allFields.map((f) => [f.key, String(raw[f.key] ?? "")])));
+    if (typeof window !== "undefined") window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingWeek(null);
+    setValues(Object.fromEntries(allFields.map((f) => [f.key, ""])));
+    setWeek(`T${parseInt(last.week.replace("T", "")) + 1}`);
+  };
+
+  const requestDelete = (wkLabel: string) => {
+    if (typeof window !== "undefined" && !window.confirm(`Xoá báo cáo tuần ${wkLabel}?`)) return;
+    if (editingWeek === wkLabel) cancelEdit();
+    onDelete(wkLabel);
   };
 
   return (
@@ -1139,13 +1172,24 @@ function FanpageView({
       <FanpageRecommendations aggregated={aggregated} period={period} periodLabel={periodLabel} />
 
       {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
-      <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
+      <FanpageMetricsSheet
+        data={data}
+        allFields={allFields}
+        groups={fanpageGroups}
+        canEdit={canEdit}
+        onEditWeek={startEdit}
+        onDeleteWeek={requestDelete}
+        editingWeek={editingWeek}
+      />
 
       {/* Add weekly report - grouped form */}
+      {canEdit && (
       <Card className="p-5 shadow-card-soft">
         <div className="mb-4 flex items-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold">Tạo báo cáo tuần mới — Fanpage</h3>
+          {editingWeek ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
+          <h3 className="font-display text-lg font-semibold">
+            {editingWeek ? `Sửa báo cáo tuần ${editingWeek} — Fanpage` : "Tạo báo cáo tuần mới — Fanpage"}
+          </h3>
         </div>
         <div className="mb-5 max-w-xs">
           <Label>Tuần</Label>
@@ -1179,12 +1223,18 @@ function FanpageView({
             );
           })}
         </div>
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-2">
+          {editingWeek && (
+            <Button variant="outline" onClick={cancelEdit}>
+              <X className="mr-1 h-4 w-4" /> Huỷ
+            </Button>
+          )}
           <Button onClick={submit} className="bg-gradient-brand text-primary-foreground shadow-elegant">
-            <Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần
+            {editingWeek ? <><Pencil className="mr-1 h-4 w-4" /> Cập nhật</> : <><Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần</>}
           </Button>
         </div>
       </Card>
+      )}
     </div>
   );
 }
