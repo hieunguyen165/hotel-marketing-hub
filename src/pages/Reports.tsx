@@ -464,6 +464,7 @@ function ChannelView({
               <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="py-2 pr-4">{period === "week" ? "Tuần" : period === "month" ? "Tháng" : "Năm"}</th>
                 {fields.map((f) => <th key={f.key} className="py-2 pr-4">{f.label}</th>)}
+                {canEdit && period === "week" && <th className="py-2 pr-4 text-right">Hành động</th>}
               </tr>
             </thead>
             <tbody>
@@ -475,6 +476,18 @@ function ChannelView({
                       {(((d as any)[f.key] ?? 0) as number).toLocaleString("vi-VN")}
                     </td>
                   ))}
+                  {canEdit && period === "week" && (
+                    <td className="py-2 pr-4 text-right">
+                      <div className="inline-flex gap-1">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEdit(d.label)} title="Sửa">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => requestDelete(d.label)} title="Xoá">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -483,10 +496,13 @@ function ChannelView({
       </Card>
 
       {/* Add weekly report */}
+      {canEdit && (
       <Card className="p-5 shadow-card-soft">
         <div className="mb-4 flex items-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold">Tạo báo cáo tuần mới — {meta.title}</h3>
+          {editingWeek ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
+          <h3 className="font-display text-lg font-semibold">
+            {editingWeek ? `Sửa báo cáo tuần ${editingWeek} — ${meta.title}` : `Tạo báo cáo tuần mới — ${meta.title}`}
+          </h3>
         </div>
         <div className="grid gap-4 md:grid-cols-4">
           <div>
@@ -505,12 +521,18 @@ function ChannelView({
             </div>
           ))}
         </div>
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex justify-end gap-2">
+          {editingWeek && (
+            <Button variant="outline" onClick={cancelEdit}>
+              <X className="mr-1 h-4 w-4" /> Huỷ
+            </Button>
+          )}
           <Button onClick={submit} className="bg-gradient-brand text-primary-foreground shadow-elegant">
-            <Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần
+            {editingWeek ? <><Pencil className="mr-1 h-4 w-4" /> Cập nhật</> : <><Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần</>}
           </Button>
         </div>
       </Card>
+      )}
     </div>
   );
 }
