@@ -15,11 +15,13 @@ import {
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
   Globe, Megaphone, MessageCircle, LayoutGrid, Eye, Heart, Users, Mail,
+  Pencil, Trash2, X,
 } from "lucide-react";
 import { Filter } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FanpageDecisionDashboard, FanpageRecommendations } from "@/components/reports/FanpageDecisionDashboard";
 import { WebsiteReportPanel } from "@/components/reports/WebsiteReportPanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
 
@@ -41,6 +43,11 @@ const Reports = () => {
   const current = (channel ?? "overview") as ChannelKey;
   const { toast } = useToast();
   const [data, setData] = useState<WeeklyReport[]>(seed);
+
+  const removeReport = (week: string) => {
+    setData((prev) => prev.filter((r) => r.week !== week));
+    toast({ title: "Đã xoá báo cáo", description: `Tuần ${week}` });
+  };
 
   if (channel && !["overview", "website", "fanpage", "ads"].includes(channel)) {
     return <Navigate to="/reports" replace />;
@@ -104,6 +111,27 @@ const Reports = () => {
             ]);
             toast({ title: "Đã tạo báo cáo Fanpage", description: `Tuần ${week}` });
           }}
+          onEdit={(originalWeek, newWeek, values) => {
+            setData((prev) => {
+              const idx = prev.findIndex((r) => r.week === originalWeek);
+              if (idx < 0) return prev;
+              const baseFollowers = idx > 0 ? prev[idx - 1].fanpage.followers : prev[idx].fanpage.followers;
+              const next = [...prev];
+              next[idx] = {
+                ...next[idx],
+                week: newWeek,
+                fanpage: {
+                  ...values,
+                  reach: values.totalViews,
+                  followers: baseFollowers + values.newFollowers - values.unfollows,
+                  engagement: values.likes + values.comments + values.shares,
+                } as any,
+              };
+              return next;
+            });
+            toast({ title: "Đã cập nhật báo cáo Fanpage", description: `Tuần ${newWeek}` });
+          }}
+          onDelete={removeReport}
         />
       )}
       {current === "ads" && (
@@ -114,6 +142,17 @@ const Reports = () => {
             setData((prev) => [...prev, { ...prev[prev.length - 1], week, ads: values as any }]);
             toast({ title: "Đã tạo báo cáo Quảng cáo", description: `Tuần ${week}` });
           }}
+          onEdit={(originalWeek, newWeek, values) => {
+            setData((prev) => {
+              const idx = prev.findIndex((r) => r.week === originalWeek);
+              if (idx < 0) return prev;
+              const next = [...prev];
+              next[idx] = { ...next[idx], week: newWeek, ads: { ...next[idx].ads, ...values } as any };
+              return next;
+            });
+            toast({ title: "Đã cập nhật báo cáo Quảng cáo", description: `Tuần ${newWeek}` });
+          }}
+          onDelete={removeReport}
         />
       )}
     </AppLayout>
@@ -269,14 +308,20 @@ function ChannelView({
   channel,
   data,
   onAdd,
+  onEdit,
+  onDelete,
 }: {
   channel: "website" | "ads";
   data: WeeklyReport[];
   onAdd: (week: string, values: Record<string, number>) => void;
+  onEdit: (originalWeek: string, newWeek: string, values: Record<string, number>) => void;
+  onDelete: (week: string) => void;
 }) {
   const meta = channelMeta[channel];
   const Icon = meta.icon;
   const fields = channelFields[channel];
+  const { canEdit } = useAuth();
+  const [editingWeek, setEditingWeek] = useState<string | null>(null);
 
   // Bộ lọc Tuần / Tháng / Năm
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
@@ -298,9 +343,36 @@ function ChannelView({
     if (!week.trim()) return;
     const numeric: Record<string, number> = {};
     for (const f of fields) numeric[f.key] = Number(values[f.key]) || 0;
-    onAdd(week.trim(), numeric);
+    if (editingWeek) {
+      onEdit(editingWeek, week.trim(), numeric);
+      setEditingWeek(null);
+    } else {
+      onAdd(week.trim(), numeric);
+    }
     setValues(Object.fromEntries(fields.map((f) => [f.key, ""])));
     setWeek(`T${parseInt(week.replace("T", "")) + 1}`);
+  };
+
+  const startEdit = (wkLabel: string) => {
+    const row = data.find((d) => d.week === wkLabel);
+    if (!row) return;
+    const raw = (row as any)[channel] as Record<string, number>;
+    setEditingWeek(wkLabel);
+    setWeek(wkLabel);
+    setValues(Object.fromEntries(fields.map((f) => [f.key, String(raw[f.key] ?? "")])));
+    if (typeof window !== "undefined") window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingWeek(null);
+    setValues(Object.fromEntries(fields.map((f) => [f.key, ""])));
+    setWeek(`T${parseInt(lastRaw.week.replace("T", "")) + 1}`);
+  };
+
+  const requestDelete = (wkLabel: string) => {
+    if (typeof window !== "undefined" && !window.confirm(`Xoá báo cáo tuần ${wkLabel}?`)) return;
+    if (editingWeek === wkLabel) cancelEdit();
+    onDelete(wkLabel);
   };
 
   return (
@@ -392,6 +464,7 @@ function ChannelView({
               <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="py-2 pr-4">{period === "week" ? "Tuần" : period === "month" ? "Tháng" : "Năm"}</th>
                 {fields.map((f) => <th key={f.key} className="py-2 pr-4">{f.label}</th>)}
+                {canEdit && period === "week" && <th className="py-2 pr-4 text-right">Hành động</th>}
               </tr>
             </thead>
             <tbody>
@@ -403,6 +476,18 @@ function ChannelView({
                       {(((d as any)[f.key] ?? 0) as number).toLocaleString("vi-VN")}
                     </td>
                   ))}
+                  {canEdit && period === "week" && (
+                    <td className="py-2 pr-4 text-right">
+                      <div className="inline-flex gap-1">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => startEdit(d.label)} title="Sửa">
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => requestDelete(d.label)} title="Xoá">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -411,10 +496,13 @@ function ChannelView({
       </Card>
 
       {/* Add weekly report */}
+      {canEdit && (
       <Card className="p-5 shadow-card-soft">
         <div className="mb-4 flex items-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold">Tạo báo cáo tuần mới — {meta.title}</h3>
+          {editingWeek ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
+          <h3 className="font-display text-lg font-semibold">
+            {editingWeek ? `Sửa báo cáo tuần ${editingWeek} — ${meta.title}` : `Tạo báo cáo tuần mới — ${meta.title}`}
+          </h3>
         </div>
         <div className="grid gap-4 md:grid-cols-4">
           <div>
@@ -433,12 +521,18 @@ function ChannelView({
             </div>
           ))}
         </div>
-        <div className="mt-5 flex justify-end">
+        <div className="mt-5 flex justify-end gap-2">
+          {editingWeek && (
+            <Button variant="outline" onClick={cancelEdit}>
+              <X className="mr-1 h-4 w-4" /> Huỷ
+            </Button>
+          )}
           <Button onClick={submit} className="bg-gradient-brand text-primary-foreground shadow-elegant">
-            <Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần
+            {editingWeek ? <><Pencil className="mr-1 h-4 w-4" /> Cập nhật</> : <><Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần</>}
           </Button>
         </div>
       </Card>
+      )}
     </div>
   );
 }
@@ -739,10 +833,18 @@ function FanpageMetricsSheet({
   data,
   allFields,
   groups,
+  canEdit,
+  onEditWeek,
+  onDeleteWeek,
+  editingWeek,
 }: {
   data: WeeklyReport[];
   allFields: { key: string; label: string; invert?: boolean }[];
   groups: { title: string; color: string; fields: { key: string; label: string; invert?: boolean }[] }[];
+  canEdit?: boolean;
+  onEditWeek?: (week: string) => void;
+  onDeleteWeek?: (week: string) => void;
+  editingWeek?: string | null;
 }) {
   const weeks = data;
   const fieldGroupColor = (key: string) => {
@@ -767,7 +869,21 @@ function FanpageMetricsSheet({
             <tr className="border-b border-border text-xs uppercase tracking-wider text-muted-foreground">
               <th className="sticky left-0 z-10 bg-card px-4 py-3 text-left font-semibold">Chỉ số</th>
               {weeks.map((w) => (
-                <th key={w.week} className="px-3 py-3 text-right font-semibold">{w.week}</th>
+                <th key={w.week} className={`px-3 py-3 text-right font-semibold ${editingWeek === w.week ? "bg-primary/10" : ""}`}>
+                  <div className="flex items-center justify-end gap-1">
+                    <span>{w.week}</span>
+                    {canEdit && (
+                      <span className="inline-flex">
+                        <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onEditWeek?.(w.week)} title="Sửa">
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => onDeleteWeek?.(w.week)} title="Xoá">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </span>
+                    )}
+                  </div>
+                </th>
               ))}
             </tr>
           </thead>
@@ -985,14 +1101,20 @@ const fanpageGroups: {
 function FanpageView({
   data,
   onAdd,
+  onEdit,
+  onDelete,
 }: {
   data: WeeklyReport[];
   onAdd: (week: string, values: FanpageValues) => void;
+  onEdit: (originalWeek: string, newWeek: string, values: FanpageValues) => void;
+  onDelete: (week: string) => void;
 }) {
   const last = data[data.length - 1];
   const prev = data[data.length - 2];
   const meta = channelMeta.fanpage;
   const Icon = meta.icon;
+  const { canEdit } = useAuth();
+  const [editingWeek, setEditingWeek] = useState<string | null>(null);
 
   // Bộ lọc Tuần / Tháng / Năm
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
@@ -1011,9 +1133,36 @@ function FanpageView({
     if (!week.trim()) return;
     const numeric = {} as FanpageValues;
     for (const f of allFields) (numeric as any)[f.key] = Number(values[f.key]) || 0;
-    onAdd(week.trim(), numeric);
+    if (editingWeek) {
+      onEdit(editingWeek, week.trim(), numeric);
+      setEditingWeek(null);
+    } else {
+      onAdd(week.trim(), numeric);
+    }
     setValues(Object.fromEntries(allFields.map((f) => [f.key, ""])));
     setWeek(`T${parseInt(week.replace("T", "")) + 1}`);
+  };
+
+  const startEdit = (wkLabel: string) => {
+    const row = data.find((d) => d.week === wkLabel);
+    if (!row) return;
+    const raw = row.fanpage as any;
+    setEditingWeek(wkLabel);
+    setWeek(wkLabel);
+    setValues(Object.fromEntries(allFields.map((f) => [f.key, String(raw[f.key] ?? "")])));
+    if (typeof window !== "undefined") window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingWeek(null);
+    setValues(Object.fromEntries(allFields.map((f) => [f.key, ""])));
+    setWeek(`T${parseInt(last.week.replace("T", "")) + 1}`);
+  };
+
+  const requestDelete = (wkLabel: string) => {
+    if (typeof window !== "undefined" && !window.confirm(`Xoá báo cáo tuần ${wkLabel}?`)) return;
+    if (editingWeek === wkLabel) cancelEdit();
+    onDelete(wkLabel);
   };
 
   return (
@@ -1045,13 +1194,24 @@ function FanpageView({
       <FanpageRecommendations aggregated={aggregated} period={period} periodLabel={periodLabel} />
 
       {/* === BẢNG SHEET CHỈ SỐ — gọn gàng, hiển thị tăng/giảm === */}
-      <FanpageMetricsSheet data={data} allFields={allFields} groups={fanpageGroups} />
+      <FanpageMetricsSheet
+        data={data}
+        allFields={allFields}
+        groups={fanpageGroups}
+        canEdit={canEdit}
+        onEditWeek={startEdit}
+        onDeleteWeek={requestDelete}
+        editingWeek={editingWeek}
+      />
 
       {/* Add weekly report - grouped form */}
+      {canEdit && (
       <Card className="p-5 shadow-card-soft">
         <div className="mb-4 flex items-center gap-2">
-          <Plus className="h-5 w-5 text-primary" />
-          <h3 className="font-display text-lg font-semibold">Tạo báo cáo tuần mới — Fanpage</h3>
+          {editingWeek ? <Pencil className="h-5 w-5 text-primary" /> : <Plus className="h-5 w-5 text-primary" />}
+          <h3 className="font-display text-lg font-semibold">
+            {editingWeek ? `Sửa báo cáo tuần ${editingWeek} — Fanpage` : "Tạo báo cáo tuần mới — Fanpage"}
+          </h3>
         </div>
         <div className="mb-5 max-w-xs">
           <Label>Tuần</Label>
@@ -1085,12 +1245,18 @@ function FanpageView({
             );
           })}
         </div>
-        <div className="mt-6 flex justify-end">
+        <div className="mt-6 flex justify-end gap-2">
+          {editingWeek && (
+            <Button variant="outline" onClick={cancelEdit}>
+              <X className="mr-1 h-4 w-4" /> Huỷ
+            </Button>
+          )}
           <Button onClick={submit} className="bg-gradient-brand text-primary-foreground shadow-elegant">
-            <Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần
+            {editingWeek ? <><Pencil className="mr-1 h-4 w-4" /> Cập nhật</> : <><Plus className="mr-1 h-4 w-4" /> Lưu báo cáo tuần</>}
           </Button>
         </div>
       </Card>
+      )}
     </div>
   );
 }
