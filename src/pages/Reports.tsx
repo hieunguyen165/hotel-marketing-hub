@@ -308,14 +308,20 @@ function ChannelView({
   channel,
   data,
   onAdd,
+  onEdit,
+  onDelete,
 }: {
   channel: "website" | "ads";
   data: WeeklyReport[];
   onAdd: (week: string, values: Record<string, number>) => void;
+  onEdit: (originalWeek: string, newWeek: string, values: Record<string, number>) => void;
+  onDelete: (week: string) => void;
 }) {
   const meta = channelMeta[channel];
   const Icon = meta.icon;
   const fields = channelFields[channel];
+  const { canEdit } = useAuth();
+  const [editingWeek, setEditingWeek] = useState<string | null>(null);
 
   // Bộ lọc Tuần / Tháng / Năm
   const [period, setPeriod] = useState<"week" | "month" | "year">("week");
@@ -337,9 +343,36 @@ function ChannelView({
     if (!week.trim()) return;
     const numeric: Record<string, number> = {};
     for (const f of fields) numeric[f.key] = Number(values[f.key]) || 0;
-    onAdd(week.trim(), numeric);
+    if (editingWeek) {
+      onEdit(editingWeek, week.trim(), numeric);
+      setEditingWeek(null);
+    } else {
+      onAdd(week.trim(), numeric);
+    }
     setValues(Object.fromEntries(fields.map((f) => [f.key, ""])));
     setWeek(`T${parseInt(week.replace("T", "")) + 1}`);
+  };
+
+  const startEdit = (wkLabel: string) => {
+    const row = data.find((d) => d.week === wkLabel);
+    if (!row) return;
+    const raw = (row as any)[channel] as Record<string, number>;
+    setEditingWeek(wkLabel);
+    setWeek(wkLabel);
+    setValues(Object.fromEntries(fields.map((f) => [f.key, String(raw[f.key] ?? "")])));
+    if (typeof window !== "undefined") window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingWeek(null);
+    setValues(Object.fromEntries(fields.map((f) => [f.key, ""])));
+    setWeek(`T${parseInt(lastRaw.week.replace("T", "")) + 1}`);
+  };
+
+  const requestDelete = (wkLabel: string) => {
+    if (typeof window !== "undefined" && !window.confirm(`Xoá báo cáo tuần ${wkLabel}?`)) return;
+    if (editingWeek === wkLabel) cancelEdit();
+    onDelete(wkLabel);
   };
 
   return (
