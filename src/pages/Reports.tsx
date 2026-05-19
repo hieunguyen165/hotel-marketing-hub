@@ -15,11 +15,13 @@ import {
 import {
   TrendingUp, TrendingDown, CheckCircle2, AlertTriangle, Lightbulb, Plus,
   Globe, Megaphone, MessageCircle, LayoutGrid, Eye, Heart, Users, Mail,
+  Pencil, Trash2, X,
 } from "lucide-react";
 import { Filter } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FanpageDecisionDashboard, FanpageRecommendations } from "@/components/reports/FanpageDecisionDashboard";
 import { WebsiteReportPanel } from "@/components/reports/WebsiteReportPanel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type ChannelKey = "overview" | "website" | "fanpage" | "ads";
 
@@ -41,6 +43,11 @@ const Reports = () => {
   const current = (channel ?? "overview") as ChannelKey;
   const { toast } = useToast();
   const [data, setData] = useState<WeeklyReport[]>(seed);
+
+  const removeReport = (week: string) => {
+    setData((prev) => prev.filter((r) => r.week !== week));
+    toast({ title: "Đã xoá báo cáo", description: `Tuần ${week}` });
+  };
 
   if (channel && !["overview", "website", "fanpage", "ads"].includes(channel)) {
     return <Navigate to="/reports" replace />;
@@ -104,6 +111,27 @@ const Reports = () => {
             ]);
             toast({ title: "Đã tạo báo cáo Fanpage", description: `Tuần ${week}` });
           }}
+          onEdit={(originalWeek, newWeek, values) => {
+            setData((prev) => {
+              const idx = prev.findIndex((r) => r.week === originalWeek);
+              if (idx < 0) return prev;
+              const baseFollowers = idx > 0 ? prev[idx - 1].fanpage.followers : prev[idx].fanpage.followers;
+              const next = [...prev];
+              next[idx] = {
+                ...next[idx],
+                week: newWeek,
+                fanpage: {
+                  ...values,
+                  reach: values.totalViews,
+                  followers: baseFollowers + values.newFollowers - values.unfollows,
+                  engagement: values.likes + values.comments + values.shares,
+                } as any,
+              };
+              return next;
+            });
+            toast({ title: "Đã cập nhật báo cáo Fanpage", description: `Tuần ${newWeek}` });
+          }}
+          onDelete={removeReport}
         />
       )}
       {current === "ads" && (
@@ -114,6 +142,17 @@ const Reports = () => {
             setData((prev) => [...prev, { ...prev[prev.length - 1], week, ads: values as any }]);
             toast({ title: "Đã tạo báo cáo Quảng cáo", description: `Tuần ${week}` });
           }}
+          onEdit={(originalWeek, newWeek, values) => {
+            setData((prev) => {
+              const idx = prev.findIndex((r) => r.week === originalWeek);
+              if (idx < 0) return prev;
+              const next = [...prev];
+              next[idx] = { ...next[idx], week: newWeek, ads: { ...next[idx].ads, ...values } as any };
+              return next;
+            });
+            toast({ title: "Đã cập nhật báo cáo Quảng cáo", description: `Tuần ${newWeek}` });
+          }}
+          onDelete={removeReport}
         />
       )}
     </AppLayout>
